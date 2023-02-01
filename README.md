@@ -1,3 +1,3 @@
 # CRUD_Console_App
-prac
-irrelevant
+
+Practice revolving around Builder,Singleton patterns, files and encapsulation
