@@ -51,7 +51,7 @@ public class Menu{
         System.out.println("Enter the index of the entry you would like to change: ");
         int entryIndex = scan.nextInt();
 
-        System.out.println("Enter the index of the property you would like to change for:\n"/*+ EntryDB.entryCollection.get(entryIndex)*/);
+        System.out.println("Enter the index of the property you would like to change for:\n");
         System.out.println("(1) for First Name");
         System.out.println("(2) for Last Name");
         System.out.println("(3) for Birth Date");
