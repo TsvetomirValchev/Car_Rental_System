@@ -45,9 +45,6 @@ public class Entry implements Serializable {
         }
     }
 
-    /*Constructor allows nulls,
-    * an invalid first name results in a null value for both first and last name.
-    * */
     private Entry(Builder builder) {
         this.birthDate =builder.birthDate;
         try {
@@ -72,13 +69,11 @@ public class Entry implements Serializable {
         }
     }
 
-    /* Getters */
     public String getFirstName() {return firstName;}
     public String getLastName() {return lastName;}
     public LocalDate getBirthDate() {return birthDate;}
     public String getEMail() {return eMail;}
 
-    /* Setters */
     public void setFirstName(String firstName) {this.firstName = firstName;}
     public void setLastName(String lastName) {this.lastName = lastName;}
     public void setEMail(String eMail) {this.eMail = eMail;}
