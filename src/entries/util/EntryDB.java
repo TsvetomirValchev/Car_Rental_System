@@ -6,12 +6,54 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EntryDB {
-    public static final List<Entry> entryCollection = new ArrayList<>();
+    private static final List<Entry> entryCollection = new ArrayList<>();
     private static final Path filePath = Paths.get("entries.bin");
+
+    //C
+    public void createEntry(Entry entry) {
+        EntryDB.entryCollection.add(entry);
+        EntryDB.saveEntries();
+    }
+
+    //R
+    public String readEntries() {
+        StringBuilder sb = new StringBuilder();
+        EntryDB.entryCollection
+                .forEach(i -> sb
+                        .append("|")
+                        .append(EntryDB.entryCollection.indexOf(i)+1)
+                        .append(i)
+                        .append("\n"));
+        return sb.toString();
+    }
+
+    //U
+    public void updateEntry(int entryIndex, int propertyIndex, String updatedValue) {
+        Entry entry = EntryDB.entryCollection.get(entryIndex-1);
+        switch (propertyIndex) {
+            case 1 -> entry.setFirstName(updatedValue);
+            case 2 -> entry.setLastName(updatedValue);
+            case 3 -> entry.setBirthDate(LocalDate.parse(updatedValue));
+            case 4 -> entry.setEMail(updatedValue);
+            default -> {
+            }
+        }
+        EntryDB.entryCollection.set(entryIndex, entry);
+        EntryDB.saveEntries();
+    }
+
+    //D
+    public void deleteEntry(int index) {
+        if (index >= 0 && index < EntryDB.entryCollection.size()) {
+            EntryDB.entryCollection.remove(index);
+            EntryDB.saveEntries();
+        }
+    }
 
     protected static void saveEntries() {
         try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(filePath))) {
@@ -21,7 +63,7 @@ public class EntryDB {
         }
     }
 
-    protected static void loadEntries() {
+    protected static List<Entry> loadEntries() {
         if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
             try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(filePath))) {
                 entryCollection.clear();
@@ -30,6 +72,7 @@ public class EntryDB {
                 throw new RuntimeException(e);
             }
         }
+        return new ArrayList<>(entryCollection);
     }
 }
 
