@@ -26,7 +26,7 @@ public class EntryDB {
         entryCollection
                 .forEach(i -> sb
                         .append("|")
-                        .append(EntryDB.entryCollection.indexOf(i)+1)
+                        .append(EntryDB.entryCollection.indexOf(i))
                         .append(i)
                         .append("\n"));
         return sb.toString();
@@ -34,7 +34,7 @@ public class EntryDB {
 
     //U
     public void updateEntry(int entryIndex, int propertyIndex, String updatedValue) {
-        Entry entry = entryCollection.get(entryIndex-1);
+        Entry entry = entryCollection.get(entryIndex);
         switch (propertyIndex) {
             case 1 -> entry.setFirstName(updatedValue);
             case 2 -> entry.setLastName(updatedValue);
