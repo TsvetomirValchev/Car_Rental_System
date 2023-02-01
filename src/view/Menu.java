@@ -1,7 +1,6 @@
 package view;
 
 import entries.Entry;
-import entries.util.EntryDB;
 import entries.util.EntryHandler;
 
 import java.time.LocalDate;
