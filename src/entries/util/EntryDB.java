@@ -14,6 +14,8 @@ public class EntryDB {
     private static final List<Entry> entryCollection = new ArrayList<>();
     private static final Path filePath = Paths.get("entries.bin");
 
+    EntryDB(){}
+
     //C
     public void createEntry(Entry entry) {
         entryCollection.add(entry);

@@ -16,6 +16,7 @@ public class Entry implements Serializable {
     private String eMail;
     private LocalDate birthDate;
 
+
     /*Builder class for creating Entry objects...
      just for show, not an optimal choice by any means.*/
     public static class Builder {
