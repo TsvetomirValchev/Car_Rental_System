@@ -8,7 +8,7 @@ public class EntryHandler extends EntryDB{
 
     public static EntryHandler instance = new EntryHandler();
 
-    private EntryHandler() {EntryDB.loadEntries();}
+    private EntryHandler() {loadEntries();}
     public static EntryHandler getInstance() {
         return instance;
     }
@@ -17,6 +17,4 @@ public class EntryHandler extends EntryDB{
         List<Entry> entries = loadEntries();
         return entries.get(index);
     }
-
-
 }
