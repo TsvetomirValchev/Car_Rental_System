@@ -8,13 +8,20 @@ public class EntryHandler extends EntryDB{
 
     public static EntryHandler instance = new EntryHandler();
 
-    private EntryHandler() {loadEntries();}
+    private EntryHandler() {
+        readEntries();
+    }
     public static EntryHandler getInstance() {
         return instance;
     }
 
-    public Entry getEntryByIndex(int index){
-        List<Entry> entries = loadEntries();
-        return entries.get(index);
+    public Entry getEntryByEmail(String eMail){
+        List<Entry> entries = readEntries();
+        for(Entry e: entries){
+            if(e.getEMail().equals(eMail)){
+                return e;
+            }
+        }
+        return null;
     }
 }

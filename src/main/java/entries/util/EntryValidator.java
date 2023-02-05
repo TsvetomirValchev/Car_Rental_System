@@ -17,5 +17,4 @@ public class EntryValidator {
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         return pattern.matcher(eMail).matches();
     }
-
 }

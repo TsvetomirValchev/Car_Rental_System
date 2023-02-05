@@ -43,33 +43,35 @@ public class Menu{
     }
     public static void readEntriesPrompt(){
         System.out.println("All entries: ");
-        System.out.println(entryHandler.readEntries());
+        for(int i=0;i<entryHandler.readEntries().size();i++){
+            System.out.println(entryHandler.readEntries().get(i));
+        }
     }
     public static void updateEntryPrompt() {
         Scanner scan = new Scanner(System.in);
 
         System.out.println("Enter the index of the entry you would like to change: ");
-        int entryIndex = scan.nextInt();
+        String entryEmail = scan.nextLine();
 
         System.out.println("Enter the index of the property you would like to change for:\n");
         System.out.println("(1) for First Name");
         System.out.println("(2) for Last Name");
         System.out.println("(3) for Birth Date");
         System.out.println("(4) for E-mail Address");
-        int propertyIndex = scan.nextInt();
+        int propertyIndex = Integer.parseInt(scan.nextLine());
 
         System.out.println("Enter the new value: ");
         String newValue = scan.next();
 
-        entryHandler.updateEntry(entryIndex, propertyIndex, newValue);
-        System.out.println("Successfully updated the entry at index "+ entryIndex+"!");
+        entryHandler.updateEntry(entryEmail, propertyIndex, newValue);
+        System.out.println("Successfully updated the entry at index "+ entryEmail+"!");
     }
     public static void deleteEntryPrompt(){
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Enter the index of the entry you would like to delete: ");
-        int indexToBeDeleted = scan.nextInt();
-        entryHandler.deleteEntry(indexToBeDeleted);
+        System.out.println("Enter the email of the entry you would like to delete: ");
+        String emailToBeDeleted = scan.nextLine();
+        entryHandler.deleteEntry(emailToBeDeleted);
         System.out.println("Entry deleted!");
     }
     public static void getMenuSwitch(){

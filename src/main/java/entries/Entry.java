@@ -49,15 +49,13 @@ public class Entry implements Serializable {
     private Entry(Builder builder) {
         this.birthDate =builder.birthDate;
         try {
-            if (!EntryValidator.isNameValid(builder.firstName)) {
-                throw new InvalidNameInputException();
-            }
-            this.firstName = builder.firstName;
+            if (EntryValidator.isNameValid(builder.firstName)) {
+                this.firstName = builder.firstName;
+            }else throw new InvalidNameInputException();
 
-            if (!EntryValidator.isNameValid(builder.lastName)) {
-                throw new InvalidNameInputException();
-            }
-            this.lastName = builder.lastName;
+            if (EntryValidator.isNameValid(builder.lastName)) {
+                this.lastName = builder.lastName;
+            } else throw new InvalidNameInputException();
         } catch (InvalidNameInputException e) {
             e.printStackTrace();
         }
@@ -85,7 +83,7 @@ public class Entry implements Serializable {
     public String toString() {
         return "|" + " " +
                 firstName + " " +
-                lastName + " | "+
+                lastName + " | " +
                 birthDate + " | " +
                 eMail +" "+ '|';
     }

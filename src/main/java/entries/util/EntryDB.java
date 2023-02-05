@@ -2,82 +2,104 @@ package entries.util;
 
 import entries.Entry;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
+/* DAO CLASS */
 public class EntryDB {
-    private final List<Entry> entryCollection = new ArrayList<>();
-    private static final Path filePath = Paths.get("entries.bin");
 
-    EntryDB(){}
+    private String SQL_USERNAME;
+    private String SQL_PASSWORD;
+    private String SQL_URL;
+    Connection connection;
+
+    EntryDB() {
+        try {
+            Properties props = new Properties();
+            props.load(new FileInputStream("db.properties"));
+            SQL_USERNAME = props.getProperty("SQL_USERNAME");
+            SQL_PASSWORD = props.getProperty("SQL_PASSWORD");
+            SQL_URL = props.getProperty("SQL_URL");
+
+            connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     //C
     public void createEntry(Entry entry) {
-        entryCollection.add(entry);
-        saveEntries();
+        String sql = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, entry.getFirstName());
+            statement.setString(2, entry.getLastName());
+            statement.setDate(3, java.sql.Date.valueOf(entry.getBirthDate()));
+            statement.setString(4, entry.getEMail());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //R
-    public String readEntries() {
-        StringBuilder sb = new StringBuilder();
-        entryCollection
-                .forEach(i -> sb
-                        .append("|")
-                        .append(entryCollection.indexOf(i))
-                        .append(i)
-                        .append("\n"));
-        return sb.toString();
+    public List<Entry> readEntries() {
+        String sql = "SELECT * FROM entries";
+        List<Entry> entries = new ArrayList<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                Entry entry = new Entry.Builder()
+                .setFirstName(resultSet.getString("first_name"))
+                .setLastName(resultSet.getString("last_name"))
+                .setBirthDate(resultSet.getDate("birth_date").toLocalDate())
+                .setEMail(resultSet.getString("email_address")).build();
+                entries.add(entry);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return entries;
     }
 
     //U
-    public void updateEntry(int entryIndex, int propertyIndex, String updatedValue) {
-        Entry entry = entryCollection.get(entryIndex);
+    public void updateEntry(String entryEmail, int propertyIndex, String updatedValue) {
+        String sql = "UPDATE entries SET ";
         switch (propertyIndex) {
-            case 1 -> entry.setFirstName(updatedValue);
-            case 2 -> entry.setLastName(updatedValue);
-            case 3 -> entry.setBirthDate(LocalDate.parse(updatedValue));
-            case 4 -> entry.setEMail(updatedValue);
-            default -> System.err.println("Invalid choice!");
+            case 1 -> sql += "first_name=?";
+            case 2 -> sql += "last_name=?";
+            case 3 -> sql += "birth_date=?";
+            case 4 -> sql += "email_address=?";
+            default -> {
+                System.err.println("Invalid choice!");
+                return;
+            }
         }
-        entryCollection.set(entryIndex, entry);
-        saveEntries();
+        sql += " WHERE email_address=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            switch (propertyIndex) {
+                case 1, 2, 4 -> statement.setString(1, updatedValue);
+                case 3 -> statement.setDate(1, Date.valueOf(LocalDate.parse(updatedValue)));
+            }
+            statement.setString(2, entryEmail);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //D
-    public void deleteEntry(int index) {
-        if (index >= 0 && index < entryCollection.size()) {
-            entryCollection.remove(index);
-            saveEntries();
-        }
-    }
-
-    protected  void saveEntries() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(filePath))) {
-            oos.writeObject(entryCollection);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected  List<Entry> loadEntries() {
-        if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
-            try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(filePath))) {
-                entryCollection.clear();
-                entryCollection.addAll((List<Entry>) ois.readObject());
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            return new ArrayList<>(entryCollection);
-        }else{
-            return Collections.emptyList();
+    public void deleteEntry(String email) {
+        String sql = "DELETE FROM entries WHERE email_address=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, email);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
-
-
