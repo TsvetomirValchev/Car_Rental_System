@@ -50,7 +50,7 @@ public class Menu{
     public static void updateEntryPrompt() {
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Enter the index of the entry you would like to change: ");
+        System.out.println("Enter the e-mail of the entry you would like to change: ");
         String entryEmail = scan.nextLine();
 
         System.out.println("Enter the index of the property you would like to change for:\n");
