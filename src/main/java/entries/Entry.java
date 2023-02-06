@@ -7,7 +7,6 @@ import exceptions.InvalidNameInputException;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-
 /* (almost) pojo class to store entry data */
 public class Entry implements Serializable {
 

@@ -23,4 +23,5 @@ public class EntryHandler extends EntryDB{
         }
         return null;
     }
+
 }
