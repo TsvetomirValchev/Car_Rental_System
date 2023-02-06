@@ -23,4 +23,7 @@ public class EntryHandler extends EntryDB{
         }
         return null;
     }
+
+    /*TODO
+        Various access and sorting methods*/
 }
