@@ -1,5 +1,6 @@
 package entries.util;
 
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 public class EntryValidator {
@@ -16,5 +17,9 @@ public class EntryValidator {
     public static boolean isEmailValid(String eMail){
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         return pattern.matcher(eMail).matches();
+    }
+
+    public static boolean isDateValid(LocalDate birthDate){
+        return birthDate.isBefore(LocalDate.now());
     }
 }

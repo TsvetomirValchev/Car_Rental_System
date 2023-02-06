@@ -8,9 +8,8 @@ public class EntryHandler extends EntryDB{
 
     public static EntryHandler instance = new EntryHandler();
 
-    private EntryHandler() {
-        readEntries();
-    }
+    private EntryHandler() {}
+
     public static EntryHandler getInstance() {
         return instance;
     }

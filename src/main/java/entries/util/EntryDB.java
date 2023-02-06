@@ -34,8 +34,8 @@ public class EntryDB {
 
     //C
     public void createEntry(Entry entry) {
-        String sql = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        String query = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, entry.getFirstName());
             statement.setString(2, entry.getLastName());
             statement.setDate(3, java.sql.Date.valueOf(entry.getBirthDate()));
@@ -48,10 +48,10 @@ public class EntryDB {
 
     //R
     public List<Entry> readEntries() {
-        String sql = "SELECT * FROM entries";
+        String query = "SELECT * FROM entries";
         List<Entry> entries = new ArrayList<>();
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
                 Entry entry = new Entry.Builder()
                 .setFirstName(resultSet.getString("first_name"))
@@ -68,19 +68,19 @@ public class EntryDB {
 
     //U
     public void updateEntry(String entryEmail, int propertyIndex, String updatedValue) {
-        String sql = "UPDATE entries SET ";
+        String query = "UPDATE entries SET ";
         switch (propertyIndex) {
-            case 1 -> sql += "first_name=?";
-            case 2 -> sql += "last_name=?";
-            case 3 -> sql += "birth_date=?";
-            case 4 -> sql += "email_address=?";
+            case 1 -> query += "first_name=?";
+            case 2 -> query += "last_name=?";
+            case 3 -> query += "birth_date=?";
+            case 4 -> query += "email_address=?";
             default -> {
                 System.err.println("Invalid choice!");
                 return;
             }
         }
-        sql += " WHERE email_address=?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        query += " WHERE email_address=?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             switch (propertyIndex) {
                 case 1, 2, 4 -> statement.setString(1, updatedValue);
                 case 3 -> statement.setDate(1, Date.valueOf(LocalDate.parse(updatedValue)));
@@ -94,8 +94,8 @@ public class EntryDB {
 
     //D
     public void deleteEntry(String email) {
-        String sql = "DELETE FROM entries WHERE email_address=?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        String query = "DELETE FROM entries WHERE email_address=?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             statement.executeUpdate();
         } catch (SQLException e) {

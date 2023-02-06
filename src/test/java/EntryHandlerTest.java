@@ -30,7 +30,6 @@ class EntryHandlerTest {
                 .setBirthDate(LocalDate.parse("2001-11-11"))
                 .setEMail("siderkata@abv.bg")
                 .build());
-
     }
 
     @Test

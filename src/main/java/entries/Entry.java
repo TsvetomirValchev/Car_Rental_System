@@ -11,10 +11,10 @@ import java.time.LocalDate;
 /* (almost) pojo class to store entry data */
 public class Entry implements Serializable {
 
-    private String firstName;
-    private String lastName;
-    private String eMail;
-    private LocalDate birthDate;
+    private final String firstName;
+    private final String lastName;
+    private final String eMail;
+    private final LocalDate birthDate;
 
 
     /*Builder class for creating Entry objects...
@@ -47,33 +47,23 @@ public class Entry implements Serializable {
     }
 
     private Entry(Builder builder) {
-        this.birthDate =builder.birthDate;
-        try {
-            if (EntryValidator.isNameValid(builder.firstName)) {
-                this.firstName = builder.firstName;
-            }else throw new InvalidNameInputException();
+        if (!EntryValidator.isNameValid(builder.firstName) || !EntryValidator.isNameValid(builder.lastName)) {
+            throw new InvalidNameInputException();
+        }
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
 
-            if (EntryValidator.isNameValid(builder.lastName)) {
-                this.lastName = builder.lastName;
-            } else throw new InvalidNameInputException();
-        } catch (InvalidNameInputException e) {
-            e.printStackTrace();
+        if (!EntryValidator.isEmailValid(builder.eMail)) {
+            throw new InvalidEmailInputException();
         }
-        try{
-            if(EntryValidator.isEmailValid(builder.eMail)){
-                this.eMail = builder.eMail;
-            } else throw new InvalidEmailInputException();
-        }catch (InvalidEmailInputException e){
-            e.printStackTrace();
+        this.eMail = builder.eMail;
+
+        if (!EntryValidator.isDateValid(builder.birthDate)) {
+            throw new IllegalArgumentException("Date cannot be in the future!");
         }
+        this.birthDate = builder.birthDate;
     }
 
-    public void setFirstName(String firstName) {this.firstName = firstName;}
-    public void setLastName(String lastName) {this.lastName = lastName;}
-    public void setEMail(String eMail) {this.eMail = eMail;}
-    public void setBirthDate(LocalDate birthDate) {this.birthDate = birthDate;}
-
-    /* only for testing purposes */
     public String getFirstName() {return firstName;}
     public String getLastName() {return lastName;}
     public String getEMail() {return eMail;}

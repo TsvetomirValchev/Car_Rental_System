@@ -50,7 +50,7 @@ public class Menu{
     public static void updateEntryPrompt() {
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Enter the index of the entry you would like to change: ");
+        System.out.println("Enter the e-mail of the entry you would like to change: ");
         String entryEmail = scan.nextLine();
 
         System.out.println("Enter the index of the property you would like to change for:\n");
@@ -64,7 +64,7 @@ public class Menu{
         String newValue = scan.next();
 
         entryHandler.updateEntry(entryEmail, propertyIndex, newValue);
-        System.out.println("Successfully updated the entry at index "+ entryEmail+"!");
+        System.out.println("Successfully updated the entry with e-mail:  "+ entryEmail+"!");
     }
     public static void deleteEntryPrompt(){
         Scanner scan = new Scanner(System.in);
