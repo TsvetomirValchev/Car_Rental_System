@@ -1,4 +1,4 @@
-package entries.util;
+package entries.db;
 
 import entries.Entry;
 

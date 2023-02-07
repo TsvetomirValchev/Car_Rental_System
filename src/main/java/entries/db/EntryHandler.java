@@ -1,10 +1,11 @@
-package entries.util;
+package entries.db;
 
 import entries.Entry;
 
+import java.util.Comparator;
 import java.util.List;
 
-public class EntryHandler extends EntryDB{
+public class EntryHandler extends EntryDB {
 
     public static EntryHandler instance = new EntryHandler();
 
@@ -26,4 +27,11 @@ public class EntryHandler extends EntryDB{
 
     /*TODO
         Various access and sorting methods*/
+
+    public List<Entry> getSortedEntries(){
+        return readEntries()
+                .stream()
+                .sorted(Comparator.comparing(Entry::getFirstName))
+                .toList();
+    }
 }

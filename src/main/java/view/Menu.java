@@ -1,7 +1,7 @@
 package view;
 
 import entries.Entry;
-import entries.util.EntryHandler;
+import entries.db.EntryHandler;
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -43,8 +43,8 @@ public class Menu{
     }
     public static void readEntriesPrompt(){
         System.out.println("All entries: ");
-        for(int i=0;i<entryHandler.readEntries().size();i++){
-            System.out.println(entryHandler.readEntries().get(i));
+        for(Entry e: entryHandler.getSortedEntries()){
+            System.out.println(e);
         }
     }
     public static void updateEntryPrompt() {
