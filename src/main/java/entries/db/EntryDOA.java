@@ -8,17 +8,17 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-/* DAO CLASS */
-public class EntryDB {
+public class EntryDOA {
 
     private String SQL_USERNAME;
     private String SQL_PASSWORD;
     private String SQL_URL;
     Connection connection;
 
-    EntryDB() {
+    EntryDOA() {
         try {
             Properties props = new Properties();
             props.load(new FileInputStream("db.properties"));
@@ -35,6 +35,7 @@ public class EntryDB {
     //C
     public void createEntry(Entry entry) {
         String query = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
+
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, entry.getFirstName());
             statement.setString(2, entry.getLastName());
@@ -50,6 +51,7 @@ public class EntryDB {
     public List<Entry> readEntries() {
         String query = "SELECT * FROM entries";
         List<Entry> entries = new ArrayList<>();
+
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
@@ -68,27 +70,34 @@ public class EntryDB {
 
     //U
     public void updateEntry(String entryEmail, int propertyIndex, String updatedValue) {
-        String query = "UPDATE entries SET ";
-        switch (propertyIndex) {
-            case 1 -> query += "first_name=?";
-            case 2 -> query += "last_name=?";
-            case 3 -> query += "birth_date=?";
-            case 4 -> query += "email_address=?";
-            default -> {
-                System.err.println("Invalid choice!");
-                return;
-            }
-        }
-        query += " WHERE email_address=?";
+        String query = buildQuery(propertyIndex);
+
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            switch (propertyIndex) {
-                case 1, 2, 4 -> statement.setString(1, updatedValue);
-                case 3 -> statement.setDate(1, Date.valueOf(LocalDate.parse(updatedValue)));
-            }
+            setStatementValues(statement, propertyIndex, updatedValue);
             statement.setString(2, entryEmail);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+    private String buildQuery(int propertyIndex) {
+        Map<Integer, String> columnMap = Map.of(
+                1, "first_name",
+                2, "last_name",
+                3, "birth_date",
+                4, "email_address"
+        );
+        String columnName = columnMap.get(propertyIndex);
+        return "UPDATE entries SET " + columnName + "=? WHERE email_address=?";
+    }
+    private void setStatementValues(PreparedStatement statement, int propertyIndex, String updatedValue) {
+        try{
+            switch (propertyIndex) {
+                case 1, 2, 4 -> statement.setString(1, updatedValue);
+                case 3 -> statement.setDate(1, Date.valueOf(LocalDate.parse(updatedValue)));
+            }
+        } catch (SQLException e) {
+           e.printStackTrace();
         }
     }
 

@@ -5,7 +5,7 @@ import entries.Entry;
 import java.util.Comparator;
 import java.util.List;
 
-public class EntryHandler extends EntryDB {
+public class EntryHandler extends EntryDOA {
 
     public static EntryHandler instance = new EntryHandler();
 

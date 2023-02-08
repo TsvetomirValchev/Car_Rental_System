@@ -16,6 +16,22 @@ public class Menu{
         System.out.println("(4) - Delete an entry.");
         System.out.println("(0) - Exit.");
     }
+    public static void getMenuSwitch(){
+        Scanner scan = new Scanner(System.in);
+        int choice;
+        do{
+            choice = scan.nextInt();
+            switch (choice){
+                case 1->createEntryPrompt();
+                case 2->readEntriesPrompt();
+                case 3->updateEntryPrompt();
+                case 4->deleteEntryPrompt();
+                case 0-> System.out.println("Exiting!..");
+                default -> System.err.println("Invalid choice!");
+            }
+        }while(choice!=0);
+    }
+
     public static void createEntryPrompt(){
         Scanner scan = new Scanner(System.in);
 
@@ -42,22 +58,19 @@ public class Menu{
         System.out.println("Entry created!");
     }
     public static void readEntriesPrompt(){
-        System.out.println("All entries: ");
+        System.out.println("All entries (in alphabetical order): ");
         for(Entry e: entryHandler.getSortedEntries()){
             System.out.println(e);
         }
     }
+
     public static void updateEntryPrompt() {
         Scanner scan = new Scanner(System.in);
 
         System.out.println("Enter the e-mail of the entry you would like to change: ");
         String entryEmail = scan.nextLine();
 
-        System.out.println("Enter the index of the property you would like to change for:\n");
-        System.out.println("(1) for First Name");
-        System.out.println("(2) for Last Name");
-        System.out.println("(3) for Birth Date");
-        System.out.println("(4) for E-mail Address");
+        printUpdateEntryOptions();
         int propertyIndex = Integer.parseInt(scan.nextLine());
 
         System.out.println("Enter the new value: ");
@@ -66,6 +79,14 @@ public class Menu{
         entryHandler.updateEntry(entryEmail, propertyIndex, newValue);
         System.out.println("Successfully updated the entry with e-mail:  "+ entryEmail+"!");
     }
+    public static void printUpdateEntryOptions(){
+        System.out.println("Enter the index of the property you would like to change for:\n");
+        System.out.println("(1) for First Name");
+        System.out.println("(2) for Last Name");
+        System.out.println("(3) for Birth Date");
+        System.out.println("(4) for E-mail Address");
+    }
+
     public static void deleteEntryPrompt(){
         Scanner scan = new Scanner(System.in);
 
@@ -73,20 +94,5 @@ public class Menu{
         String emailToBeDeleted = scan.nextLine();
         entryHandler.deleteEntry(emailToBeDeleted);
         System.out.println("Entry deleted!");
-    }
-    public static void getMenuSwitch(){
-        Scanner scan = new Scanner(System.in);
-        int choice;
-        do{
-            choice = scan.nextInt();
-            switch (choice){
-                case 1->createEntryPrompt();
-                case 2->readEntriesPrompt();
-                case 3->updateEntryPrompt();
-                case 4->deleteEntryPrompt();
-                case 0-> System.out.println("Exiting!..");
-                default -> System.err.println("Invalid choice!");
-            }
-        }while(choice!=0);
     }
 }
