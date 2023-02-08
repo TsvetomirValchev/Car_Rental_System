@@ -16,7 +16,7 @@ public class EntryDOA {
     private String SQL_USERNAME;
     private String SQL_PASSWORD;
     private String SQL_URL;
-    Connection connection;
+    private Connection connection;
 
     EntryDOA() {
         try {
