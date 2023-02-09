@@ -2,8 +2,11 @@ package entries.db;
 
 import entries.Entry;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+
 
 public class EntryHandler extends EntryDOA {
 
@@ -15,23 +18,23 @@ public class EntryHandler extends EntryDOA {
         return instance;
     }
 
-    public Entry getEntryByEmail(String eMail){
-        List<Entry> entries = readEntries();
-        for(Entry e: entries){
-            if(e.getEMail().equals(eMail)){
-                return e;
-            }
-        }
-        return null;
-    }
 
     /*TODO
         Various access and sorting methods*/
 
     public List<Entry> getSortedEntries(){
-        return readEntries()
+        return new ArrayList<>(readEntries().values())
                 .stream()
                 .sorted(Comparator.comparing(Entry::getFirstName))
                 .toList();
     }
+
+    public List<String> getSortedKeys(){
+        return new HashSet<>(readEntries().keySet())
+                .stream()
+                .sorted()
+                .toList();
+    }
+
+
 }

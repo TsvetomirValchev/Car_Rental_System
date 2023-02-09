@@ -5,18 +5,16 @@ import entries.Entry;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class EntryDOA {
 
     private String SQL_USERNAME;
     private String SQL_PASSWORD;
     private String SQL_URL;
-    Connection connection;
+    private Connection connection;
 
     EntryDOA() {
         try {
@@ -48,19 +46,19 @@ public class EntryDOA {
     }
 
     //R
-    public List<Entry> readEntries() {
+    public Map<String, Entry> readEntries() {
         String query = "SELECT * FROM entries";
-        List<Entry> entries = new ArrayList<>();
+        Map<String, Entry> entries = new HashMap<>();
 
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
                 Entry entry = new Entry.Builder()
-                .setFirstName(resultSet.getString("first_name"))
-                .setLastName(resultSet.getString("last_name"))
-                .setBirthDate(resultSet.getDate("birth_date").toLocalDate())
-                .setEMail(resultSet.getString("email_address")).build();
-                entries.add(entry);
+                        .setFirstName(resultSet.getString("first_name"))
+                        .setLastName(resultSet.getString("last_name"))
+                        .setBirthDate(resultSet.getDate("birth_date").toLocalDate())
+                        .setEMail(resultSet.getString("email_address")).build();
+                entries.put(entry.getEMail(), entry);
             }
         } catch (SQLException e) {
             e.printStackTrace();
