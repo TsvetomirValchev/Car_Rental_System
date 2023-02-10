@@ -1,6 +1,7 @@
 package entries.db;
 
 import entries.Entry;
+import logging.LoggerManager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,13 +9,15 @@ import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class EntryDOA {
 
+    private static final Logger LOGGER = LoggerManager.getLogger(EntryDOA.class.getName());
     private String SQL_USERNAME;
     private String SQL_PASSWORD;
     private String SQL_URL;
-    private Connection connection;
+
 
     EntryDOA() {
         try {
@@ -24,24 +27,35 @@ public class EntryDOA {
             SQL_PASSWORD = props.getProperty("SQL_PASSWORD");
             SQL_URL = props.getProperty("SQL_URL");
 
-            connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
-        } catch (SQLException | IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.severe(e+ "Couldn't load properties!");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Connection getConnection(){
+        try{
+            return DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
+        }catch (SQLException e){
+            LOGGER.severe(e.toString());
+            throw new RuntimeException(e);
         }
     }
 
     //C
     public void createEntry(Entry entry) {
-        String query = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
+        String query
+                = "INSERT INTO entries(first_name, last_name, birth_date, email_address) VALUES(?, ?, ?, ?)";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, entry.getFirstName());
             statement.setString(2, entry.getLastName());
             statement.setDate(3, java.sql.Date.valueOf(entry.getBirthDate()));
             statement.setString(4, entry.getEMail());
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.warning(e+" Error creating entry!");
         }
     }
 
@@ -50,7 +64,8 @@ public class EntryDOA {
         String query = "SELECT * FROM entries";
         Map<String, Entry> entries = new HashMap<>();
 
-        try (Statement statement = connection.createStatement();
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
                 Entry entry = new Entry.Builder()
@@ -61,7 +76,7 @@ public class EntryDOA {
                 entries.put(entry.getEMail(), entry);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.warning(e+" Error reading entries!");
         }
         return entries;
     }
@@ -70,12 +85,13 @@ public class EntryDOA {
     public void updateEntry(String entryEmail, int propertyIndex, String updatedValue) {
         String query = buildQuery(propertyIndex);
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
             setStatementValues(statement, propertyIndex, updatedValue);
             statement.setString(2, entryEmail);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.warning(e+" Error updating entry!");
         }
     }
     private String buildQuery(int propertyIndex) {
@@ -95,18 +111,19 @@ public class EntryDOA {
                 case 3 -> statement.setDate(1, Date.valueOf(LocalDate.parse(updatedValue)));
             }
         } catch (SQLException e) {
-           e.printStackTrace();
+            LOGGER.warning(e+" Error updating entry!");
         }
     }
 
     //D
     public void deleteEntry(String email) {
         String query = "DELETE FROM entries WHERE email_address=?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.warning(e+" Error deleting entry!");
         }
     }
 }
