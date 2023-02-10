@@ -10,7 +10,7 @@ import java.util.List;
 
 public class EntryHandler extends EntryDOA {
 
-    public static EntryHandler instance = new EntryHandler();
+    public static final EntryHandler instance = new EntryHandler();
 
     private EntryHandler() {}
 
@@ -35,6 +35,4 @@ public class EntryHandler extends EntryDOA {
                 .sorted()
                 .toList();
     }
-
-
 }
