@@ -1,7 +1,5 @@
 package db;
 
-import pojos.Car;
-import pojos.Person;
 import logging.LoggerManager;
 
 import java.io.FileInputStream;
@@ -10,16 +8,16 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class EntryDOA<T> {
+public abstract class EntryDAO<T> {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(EntryDOA.class.getName());
+    private static final Logger LOGGER = LoggerManager.getLogger(EntryDAO.class.getName());
     private String SQL_USERNAME;
     private String SQL_PASSWORD;
     private String SQL_URL;
     protected final String tableName;
     protected final String tablePrimaryKey;
 
-    protected EntryDOA(String tableName,String tablePrimaryKey){
+    protected EntryDAO(String tableName,String tablePrimaryKey){
         try(FileInputStream is = new FileInputStream("db.properties")) {
             Properties props = new Properties();
             props.load(is);
@@ -36,10 +34,11 @@ public abstract class EntryDOA<T> {
     }
 
     protected abstract String buildCreationQuery(Object object);
+    protected abstract void setValues(PreparedStatement statement, Object object) throws SQLException;
     protected abstract String getKey(T object);
     protected abstract T mapReadResultSetToObject(ResultSet resultSet) throws SQLException;
     abstract String buildUpdateQuery(int propertyIndex);
-    abstract void setUpdatedValues(PreparedStatement statement, int propertyIndex, String updatedValue);
+    abstract void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue);
 
     protected Connection getConnection(){
         try{
@@ -50,19 +49,10 @@ public abstract class EntryDOA<T> {
         }
     }
 
-    public void create(Object object) {
+    protected void create(Object object) {
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(buildCreationQuery(object))) {
-            if (object instanceof Person person) {
-                statement.setString(1, person.getFirstName());
-                statement.setString(2, person.getLastName());
-                statement.setDate(3, java.sql.Date.valueOf(person.getBirthDate()));
-                statement.setString(4, person.getEMail());
-            } else if (object instanceof Car car) {
-                statement.setString(4, car.getId());
-                statement.setString(1, car.getMake());
-                statement.setString(2, car.getModel());
-            }
+            setValues(statement, object);
             statement.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e + " Error creating object!");
@@ -86,7 +76,7 @@ public abstract class EntryDOA<T> {
         return entries;
     }
 
-    public void update(String key, int propertyIndex, String updatedValue) {
+    public void update(String key, int propertyIndex, Object updatedValue) {
         String query = buildUpdateQuery(propertyIndex);
 
         try (Connection connection = getConnection();
@@ -99,7 +89,7 @@ public abstract class EntryDOA<T> {
         }
     }
 
-    public void delete(String key) {
+    protected void delete(String key) {
         String query = "DELETE FROM " + this.tableName + " WHERE " + this.tablePrimaryKey + " = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -110,5 +100,3 @@ public abstract class EntryDOA<T> {
         }
     }
 }
-
-
