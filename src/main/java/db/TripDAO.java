@@ -6,6 +6,7 @@ import logging.LoggerManager;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class TripDAO extends EntryDAO<Trip> {
@@ -29,20 +30,29 @@ public class TripDAO extends EntryDAO<Trip> {
             statement.setString(2, trip.getMake());
             statement.setString(3, trip.getModel());
             statement.setTimestamp(4, Timestamp.valueOf((trip.getRentTime())));
-            statement.setTimestamp(5, Timestamp.valueOf((trip.getReturnTime())));
+            if (trip.getReturnTime().isPresent()) {
+                statement.setTimestamp(5, Timestamp.valueOf(trip.getReturnTime().get()));
+            } else {
+                statement.setNull(5, Types.TIMESTAMP);
+            }
         }
     }
 
     @Override
     protected Trip mapReadResultSetToObject(ResultSet resultSet) {
         try {
+            LocalDateTime returnTime = null;
+            Timestamp returnTimestamp = resultSet.getTimestamp("return_time");
+            if (returnTimestamp != null) {
+                returnTime = returnTimestamp.toLocalDateTime();
+            }
             return new Trip(
                     resultSet.getString("rent_id"),
                     resultSet.getString("client_email"),
                     resultSet.getString("car_make"),
                     resultSet.getString("car_model"),
                     resultSet.getTimestamp("rent_time").toLocalDateTime(),
-                    resultSet.getTimestamp("return_time").toLocalDateTime()
+                    Optional.ofNullable(returnTime)
             );
         } catch (SQLException e) {
             LOGGER.warning(e+" Couldn't construct object!");

@@ -2,6 +2,7 @@ package db;
 
 import cars.Car;
 import cars.Trip;
+import cars.util.CarValidator;
 import users.Admin;
 import users.Client;
 
@@ -10,7 +11,7 @@ public class AdminController {
     private static final EntryDAO<Client> clientDAO = new ClientDAO();
     private static final EntryDAO<Car> carDAO = new CarDAO();
     private static final EntryDAO<Trip> tripDAO = new TripDAO();
-    private Admin adminModel;
+    private final Admin adminModel;
 
     public AdminController() {
         this.adminModel = Admin.getInstance();
@@ -21,7 +22,9 @@ public class AdminController {
     }
 
     public void addCar(Car car){
-        carDAO.create(car);
+        if(CarValidator.isCarBrandValid(car.getMake()) && CarValidator.isCarIDValid(car.getId())){
+            carDAO.create(car);
+        }
     }
 
     public void deleteClient(String email){

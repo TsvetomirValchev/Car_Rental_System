@@ -12,6 +12,7 @@ import users.Client;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ClientController {
@@ -25,34 +26,33 @@ public class ClientController {
     public ClientController(Client clientModel) {
         this.clientModel = clientModel;
     }
-    /*TODO
-    *
-    *   Verifications and debug
-    *
-    * */
+
     public void rentCar(Car car) {
-        AdminController adminController = new AdminController();
-        adminController.addTrip(
-                new Trip("",
-                        this.clientModel.getEMail(),
-                        car.getMake(),
-                        car.getModel(),
-                        LocalDateTime.now(),
-                        null));
-        updateCarRentalStatus(car, true);
+       if(!isUserCurrentlyRenting()){
+           AdminController adminController = new AdminController();
+           adminController.addTrip(
+                   new Trip("",
+                           this.clientModel.getEMail(),
+                           car.getMake(),
+                           car.getModel(),
+                           LocalDateTime.now(),
+                           Optional.empty()));
+           updateCarRentalStatus(car, true);
+       }
     }
     public void returnCar(Car car) {
-        AdminController adminController = new AdminController();
-        for(Trip t: getHistory()){
-            if(t.getReturnTime()==null){
-                tripDAO.update(t.getId(),5,LocalDateTime.now());
+        if(isUserCurrentlyRenting()){
+            AdminController adminController = new AdminController();
+            for(Trip t: getHistory()){
+                if(t.getReturnTime().isEmpty()){
+                    tripDAO.update(t.getId(),5,LocalDateTime.now());
+                }
             }
+            updateCarRentalStatus(car, false);
         }
-        updateCarRentalStatus(car, false);
-
     }
     private void updateCarRentalStatus(Car car, boolean isRent) {
-        CarController carController = new CarController(car);
+        RentalController carController = new RentalController(car);
         try {
             if (isRent == carController.isCarFreeToRent()) {
                 carDAO.update(car.getId(), 4, isRent ? this.clientModel.getEMail() : null);
@@ -68,10 +68,6 @@ public class ClientController {
         }
     }
 
-    public void requestAccountDeletion(){
-        new AdminController().deleteClient(this.clientModel.getEMail());
-    }
-
     public List<Trip> getHistory(){
         List<Trip> tripHistory = new ArrayList<>();
         for (Trip trip : tripDAO.read().values()) {
@@ -83,4 +79,16 @@ public class ClientController {
         return tripHistory;
     }
 
+    public boolean isUserCurrentlyRenting() {
+        for (Trip trip : tripDAO.read().values()) {
+            if (trip.getClientEmail().equals(this.clientModel.getEMail()) && trip.getReturnTime().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void requestAccountDeletion(){
+        new AdminController().deleteClient(this.clientModel.getEMail());
+    }
 }

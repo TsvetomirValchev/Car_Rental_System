@@ -1,10 +1,10 @@
 package cars;
 
-abstract class Rental {
+public abstract class Rental {
 
-    private String make;
-    private String model;
-    private String clientEmail;
+    private final String make;
+    private final String model;
+    private final String clientEmail;
 
     public Rental(String make, String model, String clientEmail) {
         this.make = make;

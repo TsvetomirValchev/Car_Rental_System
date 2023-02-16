@@ -1,6 +1,5 @@
 package db;
 
-import cars.Car;
 import users.Client;
 import logging.LoggerManager;
 

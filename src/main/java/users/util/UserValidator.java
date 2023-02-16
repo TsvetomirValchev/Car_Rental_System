@@ -28,6 +28,5 @@ public class UserValidator {
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         return pattern.matcher(password).matches();
     }
-
 }
 
