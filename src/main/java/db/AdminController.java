@@ -22,7 +22,7 @@ public class AdminController {
     }
 
     public void addCar(Car car){
-        if(CarValidator.isCarBrandValid(car.getMake()) && CarValidator.isCarIDValid(car.getId())){
+        if(CarValidator.isCarIDValid(car.getId())){
             carDAO.create(car);
         }
     }

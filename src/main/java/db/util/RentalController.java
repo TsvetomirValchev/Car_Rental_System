@@ -20,7 +20,7 @@ public class RentalController{
     }
 
     public boolean isCarFreeToRent(){
-        return this.carModel.getClientEmail() == null;
+        return carModel.getClientEmail() == null;
     }
 
     public static List<Car> getFreeCars(){
@@ -32,9 +32,8 @@ public class RentalController{
     }
 
     public double calculateTripPrice(Trip trip) {
-        Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().isPresent()
-                ? trip.getReturnTime().get() : LocalDateTime.now());
-        long hours = (long) Math.ceil((double) duration.toMinutes() / 60.0);
-        return this.carModel.getPricePerHour() * hours;
+        Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().orElse(LocalDateTime.now()));
+        long hours = (long) Math.ceil((double) (duration.toMinutes() + 60) / 60.0);
+        return carModel.getPricePerHour() * hours;
     }
 }

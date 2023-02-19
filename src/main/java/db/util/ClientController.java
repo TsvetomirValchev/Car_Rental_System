@@ -27,12 +27,16 @@ public class ClientController {
         this.clientModel = clientModel;
     }
 
+    public Client getClient() {
+        return clientModel;
+    }
+
     public void rentCar(Car car) {
        if(!isUserCurrentlyRenting()){
            AdminController adminController = new AdminController();
            adminController.addTrip(
                    new Trip("",
-                           this.clientModel.getEMail(),
+                           clientModel.getEMail(),
                            car.getMake(),
                            car.getModel(),
                            LocalDateTime.now(),
@@ -42,7 +46,6 @@ public class ClientController {
     }
     public void returnCar(Car car) {
         if(isUserCurrentlyRenting()){
-            AdminController adminController = new AdminController();
             for(Trip t: getHistory()){
                 if(t.getReturnTime().isEmpty()){
                     tripDAO.update(t.getId(),5,LocalDateTime.now());
@@ -55,7 +58,7 @@ public class ClientController {
         RentalController carController = new RentalController(car);
         try {
             if (isRent == carController.isCarFreeToRent()) {
-                carDAO.update(car.getId(), 4, isRent ? this.clientModel.getEMail() : null);
+                carDAO.update(car.getId(), 4, isRent ? clientModel.getEMail() : null);
             } else {
                 throw new RuntimeException();
             }
@@ -71,7 +74,7 @@ public class ClientController {
     public List<Trip> getHistory(){
         List<Trip> tripHistory = new ArrayList<>();
         for (Trip trip : tripDAO.read().values()) {
-            if (trip.getClientEmail().equals(this.clientModel.getEMail())) {
+            if (trip.getClientEmail().equals(clientModel.getEMail())) {
                 tripHistory.add(trip);
             }
         }
@@ -79,9 +82,20 @@ public class ClientController {
         return tripHistory;
     }
 
-    public boolean isUserCurrentlyRenting() {
+    public Car getRentedCar(){
+       if(isUserCurrentlyRenting()){
+           for(Car car: carDAO.read().values()){
+               if (car != null && car.getClientEmail() != null && car.getClientEmail().equals(clientModel.getEMail())){
+                   return car;
+               }
+           }
+       }
+        return null;
+    }
+
+    private boolean isUserCurrentlyRenting() {
         for (Trip trip : tripDAO.read().values()) {
-            if (trip.getClientEmail().equals(this.clientModel.getEMail()) && trip.getReturnTime().isEmpty()) {
+            if (trip.getClientEmail().equals(clientModel.getEMail()) && trip.getReturnTime().isEmpty()) {
                 return true;
             }
         }
@@ -89,6 +103,6 @@ public class ClientController {
     }
 
     public void requestAccountDeletion(){
-        new AdminController().deleteClient(this.clientModel.getEMail());
+        new AdminController().deleteClient(clientModel.getEMail());
     }
 }
