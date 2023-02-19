@@ -100,7 +100,7 @@ public class TripDAO extends EntryDAO<Trip> {
 
     public Car getTripCar(String email) {
         for (Trip t : read().values()) {
-            if (t.getClientEmail().equals(email) && t.getReturnTime().isEmpty()) {
+            if (t.getClientEmail().equals(email) && t.getReturnTime().isEmpty()){
                 return new CarDAO().getCarByModel(t.getModel());
             }
         }
