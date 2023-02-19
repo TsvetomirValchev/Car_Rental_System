@@ -75,4 +75,13 @@ public class ClientDAO extends EntryDAO<Client> {
         String columnName = columnMap.get(propertyIndex);
         return "UPDATE "+ this.tableName +" SET " + columnName + "=? WHERE "+this.tablePrimaryKey+ "=?";
     }
+
+    public Client getClientByLogin(String username, String password){
+        for(Client client: read().values()){
+            if(client.getUsername().equals(username) && client.getPassword().equals(password)){
+                return client;
+            }
+        }
+        return null;
+    }
 }

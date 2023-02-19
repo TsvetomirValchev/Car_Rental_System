@@ -1,5 +1,7 @@
 package users.util;
 
+import users.Admin;
+
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
@@ -9,9 +11,14 @@ public class UserValidator {
     private static final String EMAIL_PATTERN = ".+@.+..+";
     private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
 
-    protected static boolean isNameValid(String firstNameOrLastName){
+    private static final Admin admin = Admin.getInstance();
+
+    protected static boolean isNameValid(String username){
+        if(username.equals(admin.getUsername())){
+            return false;
+        }
         Pattern pattern = Pattern.compile(NAME_PATTERN);
-        return pattern.matcher(firstNameOrLastName).matches();
+        return pattern.matcher(username).matches();
     }
 
     protected static boolean isEmailValid(String eMail){

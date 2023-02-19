@@ -1,5 +1,6 @@
 package db;
 
+import cars.Car;
 import cars.Trip;
 import logging.LoggerManager;
 
@@ -86,5 +87,23 @@ public class TripDAO extends EntryDAO<Trip> {
         );
         String columnName = columnMap.get(propertyIndex);
         return "UPDATE " + this.tableName + " SET " + columnName + "=? WHERE " + this.tablePrimaryKey + "=?";
+    }
+
+    public Trip getTripByClient(String email){
+        for(Trip t: read().values()){
+            if(t.getClientEmail().equals(email)){
+                return t;
+            }
+        }
+        return null;
+    }
+
+    public Car getTripCar(String email){
+        for(Trip t: read().values()){
+            if(t.getClientEmail().equals(email)){
+               return new CarDAO().getCarByModel(t.getModel());
+            }
+        }
+        return null;
     }
 }
