@@ -8,7 +8,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class AdminDashboard implements Dashboard {
+public class AdminDashboard implements Dashboard{
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
     private final AdminController adminController;
