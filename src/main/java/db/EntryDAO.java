@@ -59,7 +59,7 @@ public abstract class EntryDAO<T> {
         }
     }
 
-    public Map<String, T> read() {
+    protected Map<String, T> read() {
         String query = "SELECT * FROM " + this.tableName;
         Map<String, T> entries = new HashMap<>();
 
@@ -76,7 +76,7 @@ public abstract class EntryDAO<T> {
         return entries;
     }
 
-    public void update(String key, int propertyIndex, Object updatedValue) {
+    protected void update(String key, int propertyIndex, Object updatedValue) {
         String query = buildUpdateQuery(propertyIndex);
 
         try (Connection connection = getConnection();

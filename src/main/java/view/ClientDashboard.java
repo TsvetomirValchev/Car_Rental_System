@@ -2,18 +2,16 @@ package view;
 
 import cars.Car;
 import cars.Trip;
-import db.CarDAO;
-import db.TripDAO;
-import db.util.ClientController;
-import db.util.RentalController;
+import db.ClientController;
+import db.RentalController;
+import logging.LoggerManager;
 
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class ClientDashboard implements Dashboard{
 
-    private static final CarDAO carDAO = new CarDAO();
-    private static final TripDAO tripDAO = new TripDAO();
-
+    private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
     private final ClientController clientController;
 
     ClientDashboard(ClientController clientController) {
@@ -61,18 +59,22 @@ public class ClientDashboard implements Dashboard{
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the ID of the car you wish to rent:  ");
         String id = scan.nextLine();
-        clientController.rentCar(carDAO.getCarByID(id));
+        clientController.rentCar(RentalController.getCarByID(id));
         System.out.println("Car successfully rented!");
     }
 
     private void returnPrompt(){
-        String clientEmail = clientController.getClient().getEMail();
-        Car tripCar = tripDAO.getTripCar(clientEmail);
-        Trip trip = tripDAO.getTripByClient(clientEmail);
-        RentalController rentalController = new RentalController(tripCar);
+        try{
+            String clientEmail = clientController.getClient().getEMail();
+            Car tripCar = RentalController.getTripCar(clientEmail);
+            Trip trip = RentalController.getTripByClient(clientEmail);
+            RentalController rentalController = new RentalController(tripCar);
 
-        clientController.returnCar(clientController.getRentedCar());
-        System.out.println(tripCar.getMake()+" "+tripCar.getModel()+ " returned, total price: ");
-        System.out.println(rentalController.calculateTripPrice(trip));
+            clientController.returnCar(clientController.getRentedCar());
+            System.out.println(tripCar.getMake()+" "+tripCar.getModel()+ " returned, total price: ");
+            System.out.println(rentalController.calculateTripPrice(trip)+" BGN");
+        }catch (NullPointerException e){
+            LOGGER.warning(e.getMessage());
+        }
     }
 }

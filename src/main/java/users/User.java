@@ -1,10 +1,6 @@
 package users;
 
-import db.EntryDAO;
-import logging.LoggerManager;
 import users.util.UserType;
-
-import java.util.logging.Logger;
 
 public abstract class User {
 

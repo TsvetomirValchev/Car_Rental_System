@@ -1,17 +1,14 @@
-package db.util;
+package db;
 
 import cars.Car;
 import cars.Trip;
-import db.AdminController;
-import db.CarDAO;
-import db.EntryDAO;
-import db.TripDAO;
 import logging.LoggerManager;
 import users.Client;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -29,6 +26,20 @@ public class ClientController {
 
     public Client getClient() {
         return clientModel;
+    }
+
+
+    public static Client getClientByLogin(String username, String password){
+        for(Client client: readClients().values()){
+            if(client.getUsername().equals(username) && client.getPassword().equals(password)){
+                return client;
+            }
+        }
+        return null;
+    }
+
+    public static Map<String, Client> readClients(){
+        return new ClientDAO().read();
     }
 
     public void rentCar(Car car) {
