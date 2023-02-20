@@ -42,11 +42,6 @@ public class RentalController{
         return null;
     }
 
-    public static Map<String,Car> readCars(){
-        return carDAO.read();
-    }
-
-
     public static Car getCarByID(String id){
         for(Car car: readCars().values()){
             if(car.getId().equals(id)){
@@ -63,6 +58,10 @@ public class RentalController{
             }
         }
         return null;
+    }
+
+    public static Map<String,Car> readCars(){
+        return carDAO.read();
     }
 
 

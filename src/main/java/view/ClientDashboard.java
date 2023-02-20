@@ -9,7 +9,7 @@ import logging.LoggerManager;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class ClientDashboard implements Dashboard{
+public class ClientDashboard implements Dashboard {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
     private final ClientController clientController;
