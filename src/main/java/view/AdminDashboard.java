@@ -2,15 +2,16 @@ package view;
 
 import cars.Car;
 import db.*;
-import logging.LoggerManager;
+import users.Client;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.logging.Logger;
 
 public class AdminDashboard implements Dashboard{
 
-    private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
+    private static final EntryDAO<Car> carDAO = new CarDAO();
+    private static final EntryDAO<Client> clientDAO = new ClientDAO();
+
     private final AdminController adminController;
 
     AdminDashboard(AdminController adminController) {
@@ -48,12 +49,12 @@ public class AdminDashboard implements Dashboard{
 
     private void readAllCars(){
         System.out.println("All currently available cars: ");
-        RentalController.readCars().forEach((k,v)->System.out.println(v));
+        carDAO.read().forEach((k,v)->System.out.println(v));
     }
 
     private void readAllUsers(){
         System.out.println("All currently registered clients: ");
-        ClientController.readClients().forEach((k,v)->System.out.println(v));
+        clientDAO.read().forEach((k,v)->System.out.println(v));
     }
 
     private void addACarPrompt(){
@@ -78,7 +79,7 @@ public class AdminDashboard implements Dashboard{
             System.out.println("Car successfully added!");
 
         }catch (InputMismatchException e){
-            LOGGER.warning(e.getMessage());
+            e.printStackTrace();
             addACarPrompt();
         }
     }
@@ -90,7 +91,7 @@ public class AdminDashboard implements Dashboard{
             String id = scanner.nextLine();
             adminController.deleteCar(id);
         }catch (InputMismatchException e){
-            LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
             deleteACarPrompt();
         }
         System.out.println("Car deleted!");
@@ -103,7 +104,7 @@ public class AdminDashboard implements Dashboard{
             String email = scanner.nextLine();
             adminController.deleteClient(email);
         } catch (InputMismatchException e) {
-            LOGGER.finest(e.getMessage());
+            System.err.println(e.getMessage());
             deleteAUserPrompt();
         }
         System.out.println("User deleted!");
