@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class LogInMenu {
+public class LogInMenu{
 
     private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
     private static final Admin admin = Admin.getInstance();
