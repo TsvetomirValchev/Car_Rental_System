@@ -37,4 +37,5 @@ public class AdminController {
 
     public void addTrip(Trip trip){tripDAO.create(trip);}
 
+
 }

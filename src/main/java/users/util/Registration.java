@@ -1,8 +1,7 @@
 package users.util;
 
 import db.AdminController;
-import db.ClientDAO;
-import db.EntryDAO;
+import db.ClientController;
 import users.Client;
 
 import java.time.LocalDate;
@@ -10,7 +9,6 @@ import java.time.LocalDate;
 public class Registration extends UserValidator {
 
     private static final AdminController adminController = new AdminController();
-    private static final EntryDAO<Client> clientDAO = new ClientDAO();
 
     public static void registerUser(String username, String password, LocalDate birthDate, String eMail) {
         if(!doesUserExist(username, password)) {
@@ -48,7 +46,7 @@ public class Registration extends UserValidator {
     }
 
     public static boolean doesUsernameExist(String username) {
-        for(Client c: clientDAO.read().values()) {
+        for(Client c: ClientController.readClients().values()) {
             if(c.getUsername().equals(username)) {
                 return true;
             }
@@ -57,7 +55,7 @@ public class Registration extends UserValidator {
     }
 
     private static boolean doesPasswordMatch(String username, String password) {
-        for(Client c: clientDAO.read().values()) {
+        for(Client c: ClientController.readClients().values()) {
             if(c.getUsername().equals(username) && c.getPassword().equals(password)) {
                 return true;
             }
@@ -66,7 +64,7 @@ public class Registration extends UserValidator {
     }
 
     private static boolean isEmailTaken(String eMail) {
-        for(Client c: clientDAO.read().values()) {
+        for(Client c: ClientController.readClients().values()) {
             if(c.getEMail().equals(eMail)) {
                 return true;
             }

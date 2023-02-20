@@ -1,8 +1,8 @@
 package view;
 
 import db.AdminController;
-import db.ClientDAO;
-import db.util.ClientController;
+import db.ClientController;
+import logging.LoggerManager;
 import users.Admin;
 import users.Client;
 import users.util.Registration;
@@ -10,11 +10,12 @@ import users.util.Registration;
 import java.io.Console;
 import java.time.LocalDate;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class LogInMenu {
 
+    private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
     private static final Admin admin = Admin.getInstance();
-    private static final ClientDAO clientDAO = new ClientDAO();
 
     public static void printLoginPrompt(){
         Scanner scanner = new Scanner(System.in);
@@ -28,7 +29,7 @@ public class LogInMenu {
             openAdminView();
         }else{
             if(Registration.doesUserExist(username,password)){
-                Client client = clientDAO.getClientByLogin(username,password);
+                Client client = ClientController.getClientByLogin(username,password);
                 openClientView(client);
             }else{
                 System.out.println("No account found with that info");
@@ -54,7 +55,7 @@ public class LogInMenu {
             } else {
                 System.err.println("Invalid choice!");
             }
-        } while (choice != 0);
+        } while (choice != 2);
     }
     private static void accountCreationPrompts(){
        try{
@@ -82,7 +83,7 @@ public class LogInMenu {
 
            Registration.registerUser(username,password,birthDate,eMail);
        }catch (IllegalArgumentException e){
-           System.err.println(e.getMessage());
+           LOGGER.warning(e.getMessage());
            accountCreationPrompts();
        }
     }

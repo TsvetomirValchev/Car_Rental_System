@@ -2,7 +2,6 @@ package db;
 
 import cars.Car;
 import logging.LoggerManager;
-import users.Client;
 
 import java.sql.*;
 import java.util.Map;
@@ -78,23 +77,4 @@ public class CarDAO extends EntryDAO<Car>{
         String columnName = columnMap.get(propertyIndex);
         return "UPDATE " + this.tableName + " SET " + columnName + "=? WHERE " + this.tablePrimaryKey + "=?";
     }
-
-    public Car getCarByID(String id){
-        for(Car car: read().values()){
-            if(car.getId().equals(id)){
-                return car;
-            }
-        }
-        return null;
-    }
-
-    public Car getCarByModel(String model){
-        for(Car c : read().values()){
-            if(c.getModel().equals(model)){
-                return c;
-            }
-        }
-        return null;
-    }
-
 }

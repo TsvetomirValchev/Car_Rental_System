@@ -23,7 +23,6 @@ public class LoggerManager {
         }
     }
 
-    /* hiding Logger.getLogger (not really)*/
     public static Logger getLogger(String className) {
         Logger logger = Logger.getLogger(className);
         logger.addHandler(fileHandler);

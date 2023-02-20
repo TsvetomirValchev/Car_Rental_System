@@ -21,10 +21,10 @@ public class Car extends Rental {
     @Override
     public String toString() {
         return "|" + " " +
-                this.getId() + " | " +
-                this.getMake() + " | " +
-                this.getModel() + " | "+
-                this.getClientEmail() + " | "+
-                this.getPricePerHour();
+                getId() + " | " +
+                getMake() + " | " +
+                getModel() + " | "+
+                getClientEmail() + " | "+
+                getPricePerHour()+" BGN/Hr";
     }
 }
