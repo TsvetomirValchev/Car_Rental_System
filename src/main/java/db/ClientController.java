@@ -29,10 +29,11 @@ public class ClientController {
     }
 
 
-    public static Client getClientByLogin(String username, String password){
-        for(Client client: readClients().values()){
-            if(client.getUsername().equals(username) && client.getPassword().equals(password)){
-                return client;
+    public static Client getClientByUsername(String username) {
+        Map<String, Client> clients = ClientController.readClients();
+        for (Client c : clients.values()) {
+            if (c.getUsername().equals(username)) {
+                return c;
             }
         }
         return null;

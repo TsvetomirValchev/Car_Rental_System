@@ -17,27 +17,48 @@ public class LogInMenu{
     private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
     private static final Admin admin = Admin.getInstance();
 
-    public static void printLoginPrompt(){
+    public static void printInitialPrompt(){
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Welcome, enter login info: ");
+        System.out.println("Welcome!");
+        System.out.println("(1) -> Login");
+        System.out.println("(2) -> Register");
+
+        int choice = scanner.nextInt();
+        if (choice == 1) {
+            printLoginPrompt();
+        } else if (choice == 2) {
+            accountCreationPrompts();
+            System.out.println("Account created!");
+            printLoginPrompt();
+        } else {
+            System.err.println("Invalid choice!");
+            printInitialPrompt();
+        }
+    }
+    public static void printLoginPrompt() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter login info:");
         String[] loginInfo = scanner.nextLine().split(" ");
         String username = loginInfo[0];
         String password = loginInfo[1];
 
-        if(username.equals(admin.getUsername()) && password.equals(admin.getPassword())){
+        if (username.equals(admin.getUsername()) && password.equals(admin.getPassword())) {
             openAdminView();
-        }else{
-            if(Registration.doesUserExist(username,password)){
-                Client client = ClientController.getClientByLogin(username,password);
+        } else {
+            Client client = ClientController.getClientByUsername(username);
+            if (client != null && client.getPassword().equals(password)) {
                 openClientView(client);
-            }else{
-                System.out.println("No account found with that info");
+            } else if (client != null) {
+                System.err.println("Wrong password, please try again.");
+                printLoginPrompt();
+            } else {
+                System.err.println("No account found with that info");
                 accountCreationChoice();
             }
         }
     }
-
     private static void accountCreationChoice() {
         Scanner scanner = new Scanner(System.in);
 
