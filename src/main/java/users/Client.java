@@ -1,37 +1,37 @@
 package users;
 
-import users.util.UserType;
-
 import java.time.LocalDate;
 
-public class Client extends User{
+public class Client extends User {
 
+    private final Integer id;
     private final LocalDate birthDate;
     private final String eMail;
 
-    public Client(String username, String password, LocalDate birthDate, String eMail) {
-        super(username,password);
-        this.eMail=eMail;
+    public Client(Integer id, String username, String password, LocalDate birthDate, String eMail) {
+        super(username, password);
+        this.id = id;
+        this.eMail = eMail;
         this.birthDate = birthDate;
     }
 
-    @Override
-    protected UserType getUserType() {
-        return UserType.CLIENT;
+    public Integer getId() {
+        return id;
     }
     public LocalDate getBirthDate() {
         return birthDate;
     }
-    public String getEMail() {
+    public String getEmail() {
         return eMail;
     }
 
     @Override
     public String toString() {
         return "|" + " " +
-                this.getUsername() + " | " +
-                this.getPassword() + " | " +
-                this.getBirthDate() + " | " +
-                this.getEMail() +" "+ '|';
+                getId() + " | " +
+                getUsername() + " | " +
+                getPassword() + " | " +
+                getBirthDate() + " | " +
+                getEmail() + " " + '|';
     }
 }

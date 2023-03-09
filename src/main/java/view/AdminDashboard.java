@@ -1,6 +1,6 @@
 package view;
 
-import cars.Car;
+import rental.Car;
 import db.*;
 import logging.LoggerManager;
 
@@ -10,10 +10,10 @@ import java.util.logging.Logger;
 
 public class AdminDashboard implements Dashboard{
 
-    private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
+    private static final Logger LOGGER = LoggerManager.getLogger(AdminDashboard.class.getName());
     private final AdminController adminController;
 
-    AdminDashboard(AdminController adminController) {
+    public AdminDashboard(AdminController adminController) {
         this.adminController = adminController;
     }
 
@@ -33,7 +33,9 @@ public class AdminDashboard implements Dashboard{
         Scanner scan = new Scanner(System.in);
         int choice;
         do{
+            printMenu();
             choice =scan.nextInt();
+            printSeparator(80);
             switch (choice){
                 case 1-> readAllCars();
                 case 2-> readAllUsers();
@@ -43,17 +45,20 @@ public class AdminDashboard implements Dashboard{
                 case 0-> System.out.println("Exiting..");
                 default -> System.err.println("Enter a valid option!");
             }
+            if(choice!=0){
+                printSeparator(80);
+            }
         }while (choice!=0);
     }
 
     private void readAllCars(){
         System.out.println("All currently available cars: ");
-        RentalController.readCars().forEach((k,v)->System.out.println(v));
+        adminController.getAllCars().forEach((k,v)->System.out.println(v));
     }
 
     private void readAllUsers(){
         System.out.println("All currently registered clients: ");
-        ClientController.readClients().forEach((k,v)->System.out.println(v));
+        adminController.readAllClients().forEach((k,v)->System.out.println(v));
     }
 
     private void addACarPrompt(){
@@ -67,18 +72,16 @@ public class AdminDashboard implements Dashboard{
             String brand = carInfo[0];
             String model = carInfo[1];
 
-            System.out.println("Enter car ID: ");
-            String id = scanner.nextLine();
-
             System.out.println("Enter car price per hour: ");
             String pricePerHrStr = scanner.next();
             double pricePerHr = Double.parseDouble(pricePerHrStr);
 
-            adminController.addCar(new Car(id,brand,model,null,pricePerHr));
+            adminController.addCar(new Car(null,brand,model,pricePerHr,null,true));
             System.out.println("Car successfully added!");
 
-        }catch (InputMismatchException e){
+        }catch (InputMismatchException | ArrayIndexOutOfBoundsException e){
             LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
             addACarPrompt();
         }
     }
@@ -86,11 +89,12 @@ public class AdminDashboard implements Dashboard{
     private void deleteACarPrompt(){
         try{
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter the ID (License plate) of the car: ");
-            String id = scanner.nextLine();
+            System.out.println("Enter the ID of the car: ");
+            int id = scanner.nextInt();
             adminController.deleteCar(id);
         }catch (InputMismatchException e){
             LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
             deleteACarPrompt();
         }
         System.out.println("Car deleted!");
@@ -104,8 +108,16 @@ public class AdminDashboard implements Dashboard{
             adminController.deleteClient(email);
         } catch (InputMismatchException e) {
             LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
             deleteAUserPrompt();
         }
         System.out.println("User deleted!");
+    }
+
+    @Override
+    public void printExceptionMessage(Exception e){
+        System.err.println(e.getMessage());
+        printSeparator(80);
+        getOptions();
     }
 }

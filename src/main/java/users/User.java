@@ -1,7 +1,5 @@
 package users;
 
-import users.util.UserType;
-
 public abstract class User {
 
     private final String username;
@@ -12,13 +10,10 @@ public abstract class User {
         this.password=password;
     }
 
-    protected abstract UserType getUserType();
-
     public String getUsername() {
         return username;
     }
     public String getPassword() {
         return password;
     }
-
 }

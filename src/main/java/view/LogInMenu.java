@@ -5,9 +5,10 @@ import db.ClientController;
 import logging.LoggerManager;
 import users.Admin;
 import users.Client;
-import users.util.Registration;
+import users.util.ClientRegistrant;
 
 import java.io.Console;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -36,18 +37,26 @@ public class LogInMenu{
             printInitialPrompt();
         }
     }
-    public static void printLoginPrompt() {
+    private static void printLoginPrompt() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter login info:");
-        String[] loginInfo = scanner.nextLine().split(" ");
-        String username = loginInfo[0];
-        String password = loginInfo[1];
+        String username = null;
+        String password = null;
+        try{
+            System.out.println("Enter login info:");
+            String[] loginInfo = scanner.nextLine().split(" ");
+            username = loginInfo[0];
+            password = loginInfo[1];
+        }catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e){
+            LOGGER.warning(e.getMessage());
+            System.err.println("Please enter valid data!");
+            printLoginPrompt();
+        }
 
         if (username.equals(admin.getUsername()) && password.equals(admin.getPassword())) {
             openAdminView();
         } else {
-            Client client = ClientController.getClientByUsername(username);
+            Client client = new AdminController().getClientByUsername(username);
             if (client != null && client.getPassword().equals(password)) {
                 openClientView(client);
             } else if (client != null) {
@@ -71,7 +80,7 @@ public class LogInMenu{
             if (choice == 1) {
                 accountCreationPrompts();
                 System.out.println("Account created!");
-                printLoginPrompt();
+                printInitialPrompt();
                 break;
             } else {
                 System.err.println("Invalid choice!");
@@ -102,18 +111,21 @@ public class LogInMenu{
            System.out.println("Enter an e-mail address: ");
            String eMail = scan.nextLine();
 
-           Registration.registerUser(username,password,birthDate,eMail);
-       }catch (IllegalArgumentException e){
+           Client client = new Client(null,username,password,birthDate,eMail);
+           ClientRegistrant registrant = new ClientRegistrant(client);
+           registrant.registerUser();
+
+       }catch (IllegalArgumentException | DateTimeException e){
            LOGGER.warning(e.getMessage());
+           System.err.println(e.getMessage());
            accountCreationPrompts();
        }
     }
 
     private static void openClientView(Client client){
         System.out.println("Welcome, "+client.getUsername()+'!');
-        ClientController clientController = new ClientController(client);
+        ClientController clientController = new ClientController(client.getEmail());
         Dashboard clientDashboard = new ClientDashboard(clientController);
-        clientDashboard.printMenu();
         clientDashboard.getOptions();
     }
 
@@ -121,7 +133,6 @@ public class LogInMenu{
         System.out.println("Welcome, overlord!");
         AdminController adminController = new AdminController();
         Dashboard adminDashboard = new AdminDashboard(adminController);
-        adminDashboard.printMenu();
         adminDashboard.getOptions();
     }
 }

@@ -35,33 +35,31 @@ public abstract class EntryDAO<T> {
 
     protected abstract String buildCreationQuery(Object object);
     protected abstract void setValues(PreparedStatement statement, Object object) throws SQLException;
-    protected abstract String getKey(T object);
+    protected abstract Object getKey(T object);
     protected abstract T mapReadResultSetToObject(ResultSet resultSet) throws SQLException;
     abstract String buildUpdateQuery(int propertyIndex);
-    abstract void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue);
+    abstract void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue) throws SQLException;
 
-    protected Connection getConnection(){
+    private Connection getConnection() throws SQLException {
         try{
             return DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
         }catch (SQLException e){
             LOGGER.severe(e.toString());
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
-    protected void create(Object object) {
+    protected void create(Object object) throws SQLException {
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(buildCreationQuery(object))) {
             setValues(statement, object);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.warning(e + " Error creating object!");
         }
     }
 
-    protected Map<String, T> read() {
+    protected Map<Object, T> read() throws SQLException {
         String query = "SELECT * FROM " + this.tableName;
-        Map<String, T> entries = new HashMap<>();
+        Map<Object, T> entries = new HashMap<>();
 
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement();
@@ -70,33 +68,27 @@ public abstract class EntryDAO<T> {
                 T object = mapReadResultSetToObject(resultSet);
                 entries.put(getKey(object), object);
             }
-        } catch (SQLException e) {
-            LOGGER.warning(e + " Error reading objects!");
         }
         return entries;
     }
 
-    protected void update(String key, int propertyIndex, Object updatedValue) {
+    protected void update(Object key, int propertyIndex, Object updatedValue) throws SQLException {
         String query = buildUpdateQuery(propertyIndex);
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             setUpdatedValues(statement, propertyIndex, updatedValue);
-            statement.setString(2, key);
+            statement.setObject(2, key);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.warning(e+" Error updating object!");
         }
     }
 
-    protected void delete(String key) {
+    protected void delete(Object key) throws SQLException {
         String query = "DELETE FROM " + this.tableName + " WHERE " + this.tablePrimaryKey + " = ?";
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, key);
+            statement.setObject(1, key);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.warning(e+" Error deleting object!");
         }
     }
 }

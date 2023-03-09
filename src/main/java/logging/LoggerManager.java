@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -14,12 +15,19 @@ public class LoggerManager {
 
     static {
         try {
-            fileHandler = new FileHandler(logFilePath.toString(),true);
+            fileHandler = new FileHandler(logFilePath.toString(), true);
             SimpleFormatter formatter = new SimpleFormatter();
             fileHandler.setFormatter(formatter);
+
+            Logger rootLogger = Logger.getLogger("");
+            Handler[] handlers = rootLogger.getHandlers();
+            for (Handler handler : handlers) {
+                rootLogger.removeHandler(handler);
+            }
+
             getLogger(LoggerManager.class.getName()).addHandler(fileHandler);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e + "Logger couldn't access file!");
         }
     }
 

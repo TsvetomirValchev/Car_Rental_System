@@ -1,90 +1,75 @@
 package db;
 
-import cars.Trip;
-import logging.LoggerManager;
+import rental.Trip;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public class TripDAO extends EntryDAO<Trip> {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(TripDAO.class.getName());
-
-    public TripDAO() {
-        super("rental_history", "rent_id");
+    public TripDAO(){
+        super("rental_history", "id");
     }
+
     @Override
     protected String buildCreationQuery(Object object) {
-        return "INSERT INTO "
-                + this.tableName +
-                "(client_email, car_make, car_model, rent_time,return_time) VALUES(?, ?, ?, ?, ?)";
+        return "INSERT INTO " + tableName +
+                "(client_id, car_id, rent_time, return_time) VALUES (?, ?, ?, ?)";
     }
 
     @Override
     protected void setValues(PreparedStatement statement, Object object) throws SQLException {
         if (object instanceof Trip trip) {
-            statement.setString(1, trip.getClientEmail());
-            statement.setString(2, trip.getMake());
-            statement.setString(3, trip.getModel());
-            statement.setTimestamp(4, Timestamp.valueOf((trip.getRentTime())));
+            statement.setInt(1, trip.getClientId());
+            statement.setInt(2, trip.getCarId());
+            statement.setTimestamp(3, Timestamp.valueOf(trip.getRentTime()));
             if (trip.getReturnTime().isPresent()) {
-                statement.setTimestamp(5, Timestamp.valueOf(trip.getReturnTime().get()));
+                statement.setTimestamp(4, Timestamp.valueOf(trip.getReturnTime().get()));
             } else {
-                statement.setNull(5, Types.TIMESTAMP);
+                statement.setNull(4, Types.TIMESTAMP);
             }
         }
     }
 
     @Override
-    protected Trip mapReadResultSetToObject(ResultSet resultSet) {
-        try {
-            LocalDateTime returnTime = null;
-            Timestamp returnTimestamp = resultSet.getTimestamp("return_time");
-            if (returnTimestamp != null) {
-                returnTime = returnTimestamp.toLocalDateTime();
-            }
-            return new Trip(
-                    resultSet.getString("rent_id"),
-                    resultSet.getString("client_email"),
-                    resultSet.getString("car_make"),
-                    resultSet.getString("car_model"),
-                    resultSet.getTimestamp("rent_time").toLocalDateTime(),
-                    Optional.ofNullable(returnTime)
-            );
-        } catch (SQLException e) {
-            LOGGER.warning(e+" Couldn't construct object!");
+    protected Trip mapReadResultSetToObject(ResultSet resultSet) throws SQLException {
+        LocalDateTime returnTime = null;
+        Timestamp returnTimestamp = resultSet.getTimestamp("return_time");
+        if (returnTimestamp != null) {
+            returnTime = returnTimestamp.toLocalDateTime();
         }
-        return null;
+        return new Trip(
+                resultSet.getInt("id"),
+                resultSet.getInt("client_id"),
+                resultSet.getInt("car_id"),
+                resultSet.getTimestamp("rent_time").toLocalDateTime(),
+                Optional.ofNullable(returnTime)
+        );
     }
+
     @Override
     protected String getKey(Trip object) {
-        return object.getId();
+        return Integer.toString(object.getId());
     }
 
     @Override
-    protected void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue) {
-        try {
-            switch (propertyIndex){
-                case 1,2,3-> statement.setString(1,(String) updatedValue);
-                case 4,5 -> statement.setTimestamp(1, Timestamp.valueOf((LocalDateTime) updatedValue));
-            }
-        } catch (SQLException | NumberFormatException e) {
-            LOGGER.warning(e + " Error updating car!");
+    protected void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue) throws SQLException {
+        switch (propertyIndex){
+            case 1,2-> statement.setInt(1,(Integer) updatedValue);
+            case 3,4 -> statement.setTimestamp(1, Timestamp.valueOf((LocalDateTime) updatedValue));
         }
     }
     @Override
     protected String buildUpdateQuery(int propertyIndex) {
         Map<Integer, String> columnMap = Map.of(
-                1, "client_email",
-                2, "car_make",
-                3, "car_model",
-                4, "rent_time",
-                5, "return_time"
+                1, "client_id",
+                2, "car_id",
+                3, "rent_time",
+                4, "return_time"
         );
         String columnName = columnMap.get(propertyIndex);
-        return "UPDATE " + this.tableName + " SET " + columnName + "=? WHERE " + this.tablePrimaryKey + "=?";
+        return "UPDATE " + tableName + " SET " + columnName + "=? WHERE " + tablePrimaryKey + "=?";
     }
 }
