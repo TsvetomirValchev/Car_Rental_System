@@ -46,14 +46,12 @@ public class AdminController implements ExceptionTransmitter {
     }
 
     public void addCar(Car car){
-//        if(CarValidator.isCarIDValid(car.getId())){
         try {
             carDAO.create(car);
         } catch (SQLException e) {
             LOGGER.severe(e.getMessage());
             transmitException(e);
         }
-//        }
     }
 
     public Map<Object, Car> getAllCars() {
