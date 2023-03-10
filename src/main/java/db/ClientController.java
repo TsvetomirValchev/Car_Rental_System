@@ -6,12 +6,15 @@ import rental.Trip;
 import db.exceptions.AlreadyRentingException;
 import db.exceptions.NotRentingException;
 import logging.LoggerManager;
+import users.Admin;
 import users.Client;
 import view.ClientDashboard;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -38,30 +41,32 @@ public class ClientController implements ExceptionTransmitter {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't find account!");
         }
         return null;
     }
 
-    public void rentCar(Car car) {
-      try{
-          if (!isUserCurrentlyRenting() && car.getClientId()==0) {
-              AdminController adminController = new AdminController();
-              adminController.addTrip(
-                      new Trip(null,
-                              getClient().getId(),
-                              car.getId(),
-                              LocalDateTime.now(),
-                              Optional.empty()));
-              updateCarRentalStatus(car, false);
-          }else{
-              throw new AlreadyRentingException();
-          }
-      }catch (AlreadyRentingException e){
-          LOGGER.severe(e.getMessage());
-          transmitException(e);
-      }
+    public void rentCar(int carId) {
+        try{
+            if (getCarByID(carId)== null) {
+                System.err.println("Car with ID " + carId + " not found!");
+                return;
+            }
+            if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
+                AdminController adminController = new AdminController(Admin.getInstance());
+                adminController.addTrip(
+                        new Trip(null,
+                                getClient().getId(),
+                                getCarByID(carId).getId(),
+                                LocalDateTime.now(),
+                                Optional.empty()));
+                updateCarRentalStatus(getCarByID(carId), false);
+            }else{
+                throw new AlreadyRentingException();
+            }
+        }catch (AlreadyRentingException e){
+            transmitException(e,Level.SEVERE,"You are already renting!");
+        }
     }
     public void returnCar() {
         try{
@@ -79,8 +84,11 @@ public class ClientController implements ExceptionTransmitter {
                 throw new NotRentingException();
             }
         }catch (NotRentingException | SQLException e){
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            if(e instanceof SQLException){
+                transmitException(e,Level.SEVERE,"Couldn't update trip!");
+            }else {
+                transmitException(e,Level.WARNING,"You are not renting a car!");
+            }
         }
     }
     void updateCarRentalStatus(Car car, boolean isFree){
@@ -92,9 +100,19 @@ public class ClientController implements ExceptionTransmitter {
                 carDAO.update(car.getId(),5,getClient().getId());
             }
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't update car status!");
         }
+    }
+
+    public double calculateTripPrice(Trip trip) {
+       try{
+           Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().orElse(LocalDateTime.now()));
+           long hours = (long) Math.ceil((double) (duration.toMinutes() + 60) / 60.0);
+           return getRentedCar().getPricePerHour() * hours;
+       }catch (NotRentingException e){
+           transmitException(e,Level.WARNING,"You are not renting a car!");
+       }
+       return 0;
     }
 
     public List<Trip> getHistory(){
@@ -106,8 +124,7 @@ public class ClientController implements ExceptionTransmitter {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't load trip history!");
         }
         tripHistory.sort((t1, t2) -> t2.getRentTime().compareTo(t1.getRentTime()));
         return tripHistory;
@@ -122,28 +139,33 @@ public class ClientController implements ExceptionTransmitter {
                     }
                 }
             } catch (SQLException e) {
-                LOGGER.severe(e.getMessage());
-                transmitException(e);
+                transmitException(e,Level.SEVERE,"Couldn't load current trip data!");
             }
         }
         return null;
     }
 
-    public Car getRentedCar(){
-        if(isUserCurrentlyRenting()){
-            try {
-                for(Car car: carDAO.read().values()){
-                    if (car != null && car.getClientId() != null && car.getClientId().equals(getClient().getId())){
-                        return car;
-                    }
-                }
-            } catch (SQLException e) {
-                LOGGER.severe(e.getMessage());
-                transmitException(e);
+    public Car getRentedCar() {
+        try {
+            if (isUserCurrentlyRenting()) {
+                return carDAO.read().values().stream()
+                        .filter(car -> car != null && car.getClientId() != null &&
+                                car.getClientId().equals(getClient().getId()))
+                        .findFirst()
+                        .orElse(null);
+            } else {
+                throw new NotRentingException();
+            }
+        } catch (SQLException | NotRentingException e) {
+            if (e instanceof SQLException) {
+                transmitException(e, Level.SEVERE, "Couldn't load currently rented car data!");
+            } else {
+                transmitException(e, Level.WARNING, "You are not renting a car!");
             }
         }
         return null;
     }
+
 
     boolean isUserCurrentlyRenting() {
         try {
@@ -153,8 +175,7 @@ public class ClientController implements ExceptionTransmitter {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't load trip history!");
         }
         return false;
     }
@@ -167,8 +188,7 @@ public class ClientController implements ExceptionTransmitter {
                     .sorted(Comparator.comparing(Car::getMake))
                     .toList();
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't load car list!");
         }
         return Collections.emptyList();
     }
@@ -181,14 +201,17 @@ public class ClientController implements ExceptionTransmitter {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't find car!");
         }
         return null;
     }
 
     @Override
-    public void transmitException(Exception e){
-        clientDashboard.printExceptionMessage(e);
+    public void transmitException(Exception e, Level severity, String message) {
+        clientDashboard.printExceptionMessage(message);
+    }
+    @Override
+    public void logException(Exception e,Level severity){
+        LOGGER.log(severity,e.getMessage());
     }
 }

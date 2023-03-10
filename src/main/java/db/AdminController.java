@@ -11,6 +11,7 @@ import view.AdminDashboard;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AdminController implements ExceptionTransmitter {
@@ -22,7 +23,7 @@ public class AdminController implements ExceptionTransmitter {
     private final AdminDashboard adminDashboard = new AdminDashboard(this);
     private final Admin adminModel;
 
-    public AdminController() {
+    public AdminController(Admin admin) {
         this.adminModel = Admin.getInstance();
     }
 
@@ -30,8 +31,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             return clientDAO.read();
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e, Level.SEVERE, "Couldn't access data for clients!");
         }
         return Collections.emptyMap();
     }
@@ -40,8 +40,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             clientDAO.create(client);
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e, Level.SEVERE, "Couldn't register client!");
         }
     }
 
@@ -49,8 +48,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             carDAO.create(car);
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e, Level.SEVERE, "Couldn't add car!");
         }
     }
 
@@ -58,8 +56,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             return carDAO.read();
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e, Level.SEVERE, "Couldn't access data for cars!");
         }
         return Collections.emptyMap();
     }
@@ -68,8 +65,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             clientDAO.delete(id);
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE, "Couldn't delete client account!");
         }
     }
 
@@ -77,8 +73,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             carDAO.delete(carId);
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't delete car!");
         }
     }
 
@@ -86,8 +81,7 @@ public class AdminController implements ExceptionTransmitter {
         try {
             tripDAO.create(trip);
         } catch (SQLException e) {
-            LOGGER.severe(e.getMessage());
-            transmitException(e);
+            transmitException(e,Level.SEVERE,"Couldn't register trip!");
         }
     }
 
@@ -102,7 +96,12 @@ public class AdminController implements ExceptionTransmitter {
     }
 
     @Override
-    public void transmitException(Exception e) {
-        adminDashboard.printExceptionMessage(e);
+    public void transmitException(Exception e, Level severity,String message) {
+        logException(e,severity);
+        adminDashboard.printExceptionMessage(message);
+    }
+    @Override
+    public void logException(Exception e,Level severity){
+        LOGGER.log(severity,e.getMessage());
     }
 }

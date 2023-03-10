@@ -10,44 +10,51 @@ import users.util.ClientRegistrant;
 import java.io.Console;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class LogInMenu{
-
+public class LogInMenu {
     private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
     private static final Admin admin = Admin.getInstance();
 
-    public static void printInitialPrompt(){
-        Scanner scanner = new Scanner(System.in);
+    public void printInitialPrompt() {
+        try{
+            Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Welcome!");
-        System.out.println("(1) -> Login");
-        System.out.println("(2) -> Register");
+            System.out.println("Welcome!");
+            System.out.println("(1) -> Login");
+            System.out.println("(2) -> Register");
 
-        int choice = scanner.nextInt();
-        if (choice == 1) {
-            printLoginPrompt();
-        } else if (choice == 2) {
-            accountCreationPrompts();
-            System.out.println("Account created!");
-            printLoginPrompt();
-        } else {
-            System.err.println("Invalid choice!");
+            int choice = scanner.nextInt();
+            if (choice == 1) {
+                printLoginPrompt();
+            } else if (choice == 2) {
+                accountCreationPrompts();
+                System.out.println("Account created!");
+                printLoginPrompt();
+            } else {
+                System.err.println("Invalid choice!");
+                printInitialPrompt();
+            }
+        }catch (InputMismatchException e){
+            LOGGER.warning(e.getMessage());
+            System.err.println("Invalid input");
             printInitialPrompt();
         }
     }
-    private static void printLoginPrompt() {
+
+    private void printLoginPrompt() {
         Scanner scanner = new Scanner(System.in);
 
         String username = null;
         String password = null;
-        try{
+        try {
             System.out.println("Enter login info:");
             String[] loginInfo = scanner.nextLine().split(" ");
             username = loginInfo[0];
             password = loginInfo[1];
-        }catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e){
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
             LOGGER.warning(e.getMessage());
             System.err.println("Please enter valid data!");
             printLoginPrompt();
@@ -56,7 +63,7 @@ public class LogInMenu{
         if (username.equals(admin.getUsername()) && password.equals(admin.getPassword())) {
             openAdminView();
         } else {
-            Client client = new AdminController().getClientByUsername(username);
+            Client client = new AdminController(admin).getClientByUsername(username);
             if (client != null && client.getPassword().equals(password)) {
                 openClientView(client);
             } else if (client != null) {
@@ -68,7 +75,8 @@ public class LogInMenu{
             }
         }
     }
-    private static void accountCreationChoice() {
+
+    private void accountCreationChoice() {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Create an account?");
@@ -87,51 +95,51 @@ public class LogInMenu{
             }
         } while (choice != 2);
     }
-    private static void accountCreationPrompts(){
-       try{
-           Scanner scan = new Scanner(System.in);
-           Console console = System.console();
 
-           System.out.println("Enter a username: ");
-           String username = scan.nextLine();
+    private void accountCreationPrompts() {
+        Scanner scanner = new Scanner(System.in);
+        Console console = System.console();
 
-           System.out.println("Enter a password: ");
-           String password;
-           if (console != null) {
-               char[] passwordChars = console.readPassword();
-               password = new String(passwordChars);
-           } else {
-               password = scan.nextLine();
-           }
+        try {
+            System.out.println("Enter a username: ");
+            String username = scanner.nextLine();
 
-           System.out.println("Enter birth date (YYYY-MM-DD): ");
-           String birthDateString = scan.nextLine();
-           LocalDate birthDate = LocalDate.parse(birthDateString);
+            System.out.println("Enter a password: ");
+            String password;
+            if (console != null) {
+                char[] passwordChars = console.readPassword();
+                password = new String(passwordChars);
+            } else {
+                password = scanner.nextLine();
+            }
 
-           System.out.println("Enter an e-mail address: ");
-           String eMail = scan.nextLine();
+            System.out.println("Enter birth date (YYYY-MM-DD): ");
+            String birthDateString = scanner.nextLine();
+            LocalDate birthDate = LocalDate.parse(birthDateString);
 
-           Client client = new Client(null,username,password,birthDate,eMail);
-           ClientRegistrant registrant = new ClientRegistrant(client);
-           registrant.registerUser();
+            System.out.println("Enter an e-mail address: ");
+            String eMail = scanner.nextLine();
 
-       }catch (IllegalArgumentException | DateTimeException e){
-           LOGGER.warning(e.getMessage());
-           System.err.println(e.getMessage());
-           accountCreationPrompts();
-       }
+            Client client = new Client(null, username, password, birthDate, eMail);
+            ClientRegistrant registrant = new ClientRegistrant(client);
+            registrant.registerUser();
+
+        } catch (IllegalArgumentException | DateTimeException e) {
+            LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
+            accountCreationPrompts();
+        }
     }
-
-    private static void openClientView(Client client){
+    private void openClientView(Client client){
         System.out.println("Welcome, "+client.getUsername()+'!');
         ClientController clientController = new ClientController(client.getEmail());
         Dashboard clientDashboard = new ClientDashboard(clientController);
         clientDashboard.getOptions();
     }
 
-    private static void openAdminView(){
+    private void openAdminView(){
         System.out.println("Welcome, overlord!");
-        AdminController adminController = new AdminController();
+        AdminController adminController = new AdminController(admin);
         Dashboard adminDashboard = new AdminDashboard(adminController);
         adminDashboard.getOptions();
     }

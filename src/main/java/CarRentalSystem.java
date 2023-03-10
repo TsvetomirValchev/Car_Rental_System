@@ -2,6 +2,6 @@ import view.LogInMenu;
 
 public class CarRentalSystem {
     public static void main(String[] args) {
-        LogInMenu.printInitialPrompt();
+        new LogInMenu().printInitialPrompt();
     }
 }

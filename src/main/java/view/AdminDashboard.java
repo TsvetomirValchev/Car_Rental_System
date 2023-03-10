@@ -115,8 +115,8 @@ public class AdminDashboard implements Dashboard{
     }
 
     @Override
-    public void printExceptionMessage(Exception e){
-        System.err.println(e.getMessage());
+    public void printExceptionMessage(String message){
+        System.err.println(message);
         printSeparator(80);
         getOptions();
     }

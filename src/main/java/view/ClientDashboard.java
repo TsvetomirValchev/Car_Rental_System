@@ -3,7 +3,6 @@ package view;
 import rental.Car;
 import rental.Trip;
 import db.ClientController;
-import db.RentalController;
 import logging.LoggerManager;
 
 import java.time.LocalDateTime;
@@ -37,7 +36,8 @@ public class ClientDashboard implements Dashboard {
         int choice;
         do{
             printMenu();
-            choice =scan.nextInt();
+            choice = scan.nextInt();
+            scan.nextLine();
             printSeparator(80);
             switch (choice) {
                 case 1 -> printFreeCars();
@@ -91,8 +91,8 @@ public class ClientDashboard implements Dashboard {
 
            System.out.println("Enter the ID of the car you wish to rent:  ");
            int id = scan.nextInt();
-           clientController.rentCar(clientController.getCarByID(id));
 
+           clientController.rentCar(id);
            System.out.println("Car successfully rented!");
        }catch (InputMismatchException e){
            LOGGER.warning(e.getMessage());
@@ -104,16 +104,16 @@ public class ClientDashboard implements Dashboard {
     private void returnPrompt(){
         Car tripCar = clientController.getRentedCar();
         Trip trip = clientController.getCurrentTrip();
-        RentalController rentalController = new RentalController(tripCar);
+
+        System.out.println(tripCar.getMake()+" "+tripCar.getModel()+ " returned, total price: ");
+        System.out.println(clientController.calculateTripPrice(trip)+" BGN");
 
         clientController.returnCar();
-        System.out.println(tripCar.getMake()+" "+tripCar.getModel()+ " returned, total price: ");
-        System.out.println(rentalController.calculateTripPrice(trip));
     }
 
     @Override
-    public void printExceptionMessage(Exception e){
-        System.err.println(e.getMessage());
+    public void printExceptionMessage(String message){
+        System.err.println(message);
         printSeparator(80);
         getOptions();
     }
