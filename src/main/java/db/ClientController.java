@@ -6,7 +6,6 @@ import rental.Trip;
 import db.exceptions.AlreadyRentingException;
 import db.exceptions.NotRentingException;
 import logging.LoggerManager;
-import users.Admin;
 import users.Client;
 import view.ClientDashboard;
 
@@ -53,8 +52,7 @@ public class ClientController implements ExceptionTransmitter {
                 return;
             }
             if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
-                AdminController adminController = new AdminController(Admin.getInstance());
-                adminController.addTrip(
+                tripDAO.create(
                         new Trip(null,
                                 getClient().getId(),
                                 getCarByID(carId).getId(),
@@ -65,7 +63,9 @@ public class ClientController implements ExceptionTransmitter {
                 throw new AlreadyRentingException();
             }
         }catch (AlreadyRentingException e){
-            transmitException(e,Level.SEVERE,"You are already renting!");
+            transmitException(e,Level.WARNING,"You are already renting a car!");
+        } catch (SQLException e) {
+            transmitException(e,Level.SEVERE,"Couldn't register trip!");
         }
     }
     public void returnCar() {
@@ -83,12 +83,8 @@ public class ClientController implements ExceptionTransmitter {
             } else {
                 throw new NotRentingException();
             }
-        }catch (NotRentingException | SQLException e){
-            if(e instanceof SQLException){
-                transmitException(e,Level.SEVERE,"Couldn't update trip!");
-            }else {
-                transmitException(e,Level.WARNING,"You are not renting a car!");
-            }
+        }catch (SQLException e){
+            transmitException(e,Level.SEVERE,"Couldn't update trip!");
         }
     }
     void updateCarRentalStatus(Car car, boolean isFree){
@@ -166,7 +162,6 @@ public class ClientController implements ExceptionTransmitter {
         return null;
     }
 
-
     boolean isUserCurrentlyRenting() {
         try {
             for (Trip trip : tripDAO.read().values()) {
@@ -208,6 +203,7 @@ public class ClientController implements ExceptionTransmitter {
 
     @Override
     public void transmitException(Exception e, Level severity, String message) {
+        logException(e,severity);
         clientDashboard.printExceptionMessage(message);
     }
     @Override

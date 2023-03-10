@@ -37,7 +37,6 @@ public class ClientDashboard implements Dashboard {
         do{
             printMenu();
             choice = scan.nextInt();
-            scan.nextLine();
             printSeparator(80);
             switch (choice) {
                 case 1 -> printFreeCars();
@@ -50,6 +49,7 @@ public class ClientDashboard implements Dashboard {
             if (choice != 0) {
                 printSeparator(80);
             }
+            scan.nextLine();
         }while (choice!=0);
     }
 

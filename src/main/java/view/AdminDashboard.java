@@ -48,6 +48,7 @@ public class AdminDashboard implements Dashboard{
             if(choice!=0){
                 printSeparator(80);
             }
+            scan.nextLine();
         }while (choice!=0);
     }
 

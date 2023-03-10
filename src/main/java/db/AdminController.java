@@ -77,14 +77,6 @@ public class AdminController implements ExceptionTransmitter {
         }
     }
 
-    public void addTrip(Trip trip){
-        try {
-            tripDAO.create(trip);
-        } catch (SQLException e) {
-            transmitException(e,Level.SEVERE,"Couldn't register trip!");
-        }
-    }
-
     public Client getClientByUsername(String username) {
         Map<Object, Client> clients = readAllClients();
         for (Client c : clients.values()) {
