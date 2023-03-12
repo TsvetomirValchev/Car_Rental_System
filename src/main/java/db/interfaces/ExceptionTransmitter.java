@@ -1,4 +1,4 @@
-package db.exceptions;
+package db.interfaces;
 
 import java.util.logging.Level;
 

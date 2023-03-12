@@ -1,7 +1,7 @@
 package view;
 
-import rental.Car;
-import rental.Trip;
+import cars.RentalCar;
+import cars.Trip;
 import db.ClientController;
 import logging.LoggerManager;
 
@@ -49,7 +49,6 @@ public class ClientDashboard implements Dashboard {
             if (choice != 0) {
                 printSeparator(80);
             }
-            scan.nextLine();
         }while (choice!=0);
     }
 
@@ -66,15 +65,15 @@ public class ClientDashboard implements Dashboard {
     public String getFormattedHistory(){
         StringBuilder sb = new StringBuilder();
         for(Trip trip: clientController.getHistory()){
-            Car car = clientController.getCarByID(trip.getCarId());
-            if(car != null){
+            RentalCar rentalCar = clientController.getCarByID(trip.getCarId());
+            if(rentalCar != null){
                 String rentTime = formatTime(trip.getRentTime());
                 String returnTime = trip.getReturnTime()
                         .map(this::formatTime)
                         .orElse("Ongoing trip");
                 sb.append(String.format("| %s | %s | %s | %s\n",
-                        car.getMake(),
-                        car.getModel(),
+                        rentalCar.getMake(),
+                        rentalCar.getModel(),
                         rentTime,
                         returnTime));
             }
@@ -92,8 +91,9 @@ public class ClientDashboard implements Dashboard {
            System.out.println("Enter the ID of the car you wish to rent:  ");
            int id = scan.nextInt();
 
-           clientController.rentCar(id);
-           System.out.println("Car successfully rented!");
+           if (clientController.rentCar(id)) {
+               System.out.println("Car successfully rented!");
+           }
        }catch (InputMismatchException e){
            LOGGER.warning(e.getMessage());
            System.err.println("Invalid input format!");
@@ -102,10 +102,10 @@ public class ClientDashboard implements Dashboard {
     }
 
     private void returnPrompt(){
-        Car tripCar = clientController.getRentedCar();
+        RentalCar tripRentalCar = clientController.getRentedCar();
         Trip trip = clientController.getCurrentTrip();
 
-        System.out.println(tripCar.getMake()+" "+tripCar.getModel()+ " returned, total price: ");
+        System.out.println(tripRentalCar.getMake()+" "+ tripRentalCar.getModel()+ " returned, total price: ");
         System.out.println(clientController.calculateTripPrice(trip)+" BGN");
 
         clientController.returnCar();
@@ -115,6 +115,10 @@ public class ClientDashboard implements Dashboard {
     public void printExceptionMessage(String message){
         System.err.println(message);
         printSeparator(80);
-        getOptions();
+        if(message.contains("ID")){
+            rentalPrompt();
+        }else{
+            getOptions();
+        }
     }
 }

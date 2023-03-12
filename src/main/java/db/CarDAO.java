@@ -1,12 +1,15 @@
 package db;
 
-import rental.Car;
+import cars.Car;
+import cars.RentalCar;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
-public class CarDAO extends EntryDAO<Car>{
+public class CarDAO extends EntryDAO<RentalCar>{
 
     public CarDAO(){
         super("cars", "car_id");
@@ -21,18 +24,18 @@ public class CarDAO extends EntryDAO<Car>{
 
     @Override
     protected void setValues(PreparedStatement statement, Object object) throws SQLException {
-        if (object instanceof Car car) {
-            statement.setObject(1, car.getId());
-            statement.setString(2, car.getMake());
-            statement.setString(3, car.getModel());
-            statement.setDouble(4, car.getPricePerHour());
-            statement.setObject(5, car.getClientId());
+        if (object instanceof RentalCar rentalCar) {
+            statement.setObject(1, rentalCar.getId());
+            statement.setString(2, rentalCar.getMake());
+            statement.setString(3, rentalCar.getModel());
+            statement.setDouble(4, rentalCar.getPricePerHour());
+            statement.setObject(5, rentalCar.getClientId());
         }
     }
 
     @Override
-    protected Car mapReadResultSetToObject(ResultSet resultSet) throws SQLException {
-        return new Car(
+    protected RentalCar mapReadResultSetToObject(ResultSet resultSet) throws SQLException {
+        return new RentalCar(
                 resultSet.getInt(this.tablePrimaryKey),
                 resultSet.getString("make"),
                 resultSet.getString("model"),
@@ -43,7 +46,7 @@ public class CarDAO extends EntryDAO<Car>{
     }
 
     @Override
-    protected Integer getKey(Car object) {
+    protected Integer getKey(RentalCar object) {
         return object.getId();
     }
 
@@ -67,4 +70,41 @@ public class CarDAO extends EntryDAO<Car>{
         String columnName = columnMap.get(propertyIndex);
         return "UPDATE " + this.tableName + " SET " + columnName + "=? WHERE " + this.tablePrimaryKey + "=?";
     }
+
+    /*Models and brands util*/
+
+    protected List<Car> readCarBrands() throws SQLException {
+        String query = "SELECT DISTINCT make FROM carbrands";
+        List<Car> brands = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+            while (resultSet.next()) {
+                String make = resultSet.getString("make");
+                brands.add(new Car(make, null));
+            }
+        }
+
+        return brands;
+    }
+
+    protected List<Car> readCarModels(String brand) throws SQLException {
+        String query = "SELECT DISTINCT model FROM carmodels WHERE make = ?";
+        List<Car> models = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, brand);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String model = resultSet.getString("model");
+                models.add(new Car(brand, model));
+            }
+        }
+        return models;
+    }
+
+
+
 }

@@ -1,6 +1,5 @@
 package view;
 
-import rental.Car;
 import db.*;
 import logging.LoggerManager;
 
@@ -34,7 +33,7 @@ public class AdminDashboard implements Dashboard{
         int choice;
         do{
             printMenu();
-            choice =scan.nextInt();
+            choice = scan.nextInt();
             printSeparator(80);
             switch (choice){
                 case 1-> readAllCars();
@@ -48,39 +47,47 @@ public class AdminDashboard implements Dashboard{
             if(choice!=0){
                 printSeparator(80);
             }
-            scan.nextLine();
         }while (choice!=0);
     }
 
     private void readAllCars(){
-        System.out.println("All currently available cars: ");
+        System.out.println("All currently available cars:\n");
         adminController.getAllCars().forEach((k,v)->System.out.println(v));
     }
 
     private void readAllUsers(){
         System.out.println("All currently registered clients: ");
-        adminController.readAllClients().forEach((k,v)->System.out.println(v));
+        adminController.getAllClients().forEach((k, v)->System.out.println(v));
     }
 
     private void addACarPrompt(){
         try{
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Adding a new car");
-            System.out.println();
+            System.out.println("Adding a new car..");
+            printSeparator(80);
 
-            System.out.println("Enter brand and model: ");
-            String[] carInfo = scanner.nextLine().split(" ");
-            String brand = carInfo[0];
-            String model = carInfo[1];
+            System.out.println("All available brands:\n");
+            adminController.getAllBrands().forEach(System.out::println);
+            printSeparator(80);
 
-            System.out.println("Enter car price per hour: ");
+            System.out.println("Enter the brand of the car:");
+            String brand = scanner.nextLine();
+
+            printSeparator(80);
+            System.out.println("All available models from this brand:");
+            adminController.getModelsFromBrand(brand).forEach(System.out::println);
+            printSeparator(80);
+
+            System.out.println("Enter the model of the car:");
+            String model = scanner.nextLine();
+
+            System.out.println("Enter the price/hour of the car:");
             String pricePerHrStr = scanner.next();
             double pricePerHr = Double.parseDouble(pricePerHrStr);
 
-            adminController.addCar(new Car(null,brand,model,pricePerHr,null,true));
+            adminController.addCar(brand,model,pricePerHr);
             System.out.println("Car successfully added!");
-
-        }catch (InputMismatchException | ArrayIndexOutOfBoundsException e){
+        }catch (InputMismatchException | NumberFormatException e){
             LOGGER.warning(e.getMessage());
             System.err.println(e.getMessage());
             addACarPrompt();
@@ -112,13 +119,17 @@ public class AdminDashboard implements Dashboard{
             System.err.println(e.getMessage());
             deleteAUserPrompt();
         }
-        System.out.println("User deleted!");
+        System.out.println("User and their history deleted!");
     }
 
     @Override
     public void printExceptionMessage(String message){
         System.err.println(message);
         printSeparator(80);
-        getOptions();
+        if(message.contains("brand")){
+            addACarPrompt();
+        }else{
+            getOptions();
+        }
     }
 }

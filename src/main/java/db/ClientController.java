@@ -1,10 +1,8 @@
 package db;
 
-import db.exceptions.ExceptionTransmitter;
-import rental.Car;
-import rental.Trip;
-import db.exceptions.AlreadyRentingException;
-import db.exceptions.NotRentingException;
+import cars.RentalCar;
+import db.interfaces.ExceptionTransmitter;
+import cars.Trip;
 import logging.LoggerManager;
 import users.Client;
 import view.ClientDashboard;
@@ -20,7 +18,7 @@ import java.util.logging.Logger;
 public class ClientController implements ExceptionTransmitter {
 
     private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
-    private static final EntryDAO<Car> carDAO = new CarDAO();
+    private static final EntryDAO<RentalCar> carDAO = new CarDAO();
     private static final EntryDAO<Trip> tripDAO = new TripDAO();
     private static final EntryDAO<Client> clientDAO = new ClientDAO();
     private final ClientDashboard clientDashboard = new ClientDashboard(this);
@@ -45,11 +43,11 @@ public class ClientController implements ExceptionTransmitter {
         return null;
     }
 
-    public void rentCar(int carId) {
+    public boolean rentCar(int carId) {
         try{
             if (getCarByID(carId)== null) {
                 System.err.println("Car with ID " + carId + " not found!");
-                return;
+                return false;
             }
             if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
                 tripDAO.create(
@@ -59,14 +57,18 @@ public class ClientController implements ExceptionTransmitter {
                                 LocalDateTime.now(),
                                 Optional.empty()));
                 updateCarRentalStatus(getCarByID(carId), false);
+                return  true;
             }else{
-                throw new AlreadyRentingException();
+                throw new IllegalStateException();
             }
-        }catch (AlreadyRentingException e){
-            transmitException(e,Level.WARNING,"You are already renting a car!");
-        } catch (SQLException e) {
-            transmitException(e,Level.SEVERE,"Couldn't register trip!");
+        }catch (IllegalStateException | SQLException e){
+            if(e instanceof IllegalStateException){
+                transmitException(e,Level.WARNING,"You are already renting a car!");
+            }else{
+                transmitException(e,Level.SEVERE,"Couldn't register trip!");
+            }
         }
+        return false;
     }
     public void returnCar() {
         try{
@@ -81,19 +83,19 @@ public class ClientController implements ExceptionTransmitter {
                     }
                 }
             } else {
-                throw new NotRentingException();
+                throw new IllegalStateException("You are not renting a car!");
             }
         }catch (SQLException e){
             transmitException(e,Level.SEVERE,"Couldn't update trip!");
         }
     }
-    void updateCarRentalStatus(Car car, boolean isFree){
+    void updateCarRentalStatus(RentalCar rentalCar, boolean isFree){
         try{
             if(isFree){
-                carDAO.update(car.getId(),5,null);
+                carDAO.update(rentalCar.getId(),5,null);
             }
             if(!isFree){
-                carDAO.update(car.getId(),5,getClient().getId());
+                carDAO.update(rentalCar.getId(),5,getClient().getId());
             }
         } catch (SQLException e) {
             transmitException(e,Level.SEVERE,"Couldn't update car status!");
@@ -105,7 +107,7 @@ public class ClientController implements ExceptionTransmitter {
            Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().orElse(LocalDateTime.now()));
            long hours = (long) Math.ceil((double) (duration.toMinutes() + 60) / 60.0);
            return getRentedCar().getPricePerHour() * hours;
-       }catch (NotRentingException e){
+       }catch (IllegalStateException e){
            transmitException(e,Level.WARNING,"You are not renting a car!");
        }
        return 0;
@@ -141,7 +143,7 @@ public class ClientController implements ExceptionTransmitter {
         return null;
     }
 
-    public Car getRentedCar() {
+    public RentalCar getRentedCar() {
         try {
             if (isUserCurrentlyRenting()) {
                 return carDAO.read().values().stream()
@@ -150,9 +152,9 @@ public class ClientController implements ExceptionTransmitter {
                         .findFirst()
                         .orElse(null);
             } else {
-                throw new NotRentingException();
+                throw new IllegalStateException();
             }
-        } catch (SQLException | NotRentingException e) {
+        } catch (SQLException | IllegalStateException e) {
             if (e instanceof SQLException) {
                 transmitException(e, Level.SEVERE, "Couldn't load currently rented car data!");
             } else {
@@ -175,12 +177,12 @@ public class ClientController implements ExceptionTransmitter {
         return false;
     }
 
-    public List<Car> getFreeCars() {
+    public List<RentalCar> getFreeCars() {
         try {
             return new ArrayList<>(carDAO.read().values())
                     .stream()
                     .filter(car -> car.getClientId() == 0)
-                    .sorted(Comparator.comparing(Car::getMake))
+                    .sorted(Comparator.comparing(RentalCar::getMake))
                     .toList();
         } catch (SQLException e) {
             transmitException(e,Level.SEVERE,"Couldn't load car list!");
@@ -188,11 +190,11 @@ public class ClientController implements ExceptionTransmitter {
         return Collections.emptyList();
     }
 
-    public Car getCarByID(int carId) {
+    public RentalCar getCarByID(int carId) {
         try {
-            for (Car car : carDAO.read().values()) {
-                if (car.getId() == carId) {
-                    return car;
+            for (RentalCar rentalCar : carDAO.read().values()) {
+                if (rentalCar.getId() == carId) {
+                    return rentalCar;
                 }
             }
         } catch (SQLException e) {

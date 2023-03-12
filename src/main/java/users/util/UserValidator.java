@@ -12,7 +12,7 @@ public class UserValidator{
     private static final String NAME_PATTERN = "^[a-zA-Z0-9]{3,20}$";
     private static final String EMAIL_PATTERN = ".+@.+..+";
     private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
-    private static final AdminController adminController = new AdminController(Admin.getInstance());
+    private static final AdminController adminController = new AdminController(new Admin());
 
     private final Client client;
 
@@ -42,7 +42,7 @@ public class UserValidator{
     }
 
     public boolean isNameValid(){
-        if(client.getUsername().equals(Admin.getInstance().getUsername())){
+        if(client.getUsername().equals(new Admin().getUsername())){
             return false;
         }
         Pattern pattern = Pattern.compile(NAME_PATTERN);
@@ -64,7 +64,7 @@ public class UserValidator{
     }
 
     private boolean isEmailTaken() {
-        for(Client c: adminController.readAllClients().values()) {
+        for(Client c: adminController.getAllClients().values()) {
             if(c.getEmail().equals(client.getEmail())) {
                 return true;
             }
@@ -77,7 +77,7 @@ public class UserValidator{
     }
 
     private boolean doesUsernameExist() {
-        for(Client c: adminController.readAllClients().values()) {
+        for(Client c: adminController.getAllClients().values()) {
             if(c.getUsername().equals(client.getUsername())) {
                 return true;
             }
@@ -86,7 +86,7 @@ public class UserValidator{
     }
 
     private boolean doesPasswordMatch() {
-        for(Client c: adminController.readAllClients().values()) {
+        for(Client c: adminController.getAllClients().values()) {
             if(c.getUsername().equals(client.getUsername()) && c.getPassword().equals(client.getPassword())) {
                 return true;
             }

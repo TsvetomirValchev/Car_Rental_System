@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 public class LogInMenu {
     private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
-    private static final Admin admin = Admin.getInstance();
+    private static final Admin admin = new Admin();
 
     public void printInitialPrompt() {
         try{
@@ -28,8 +28,10 @@ public class LogInMenu {
 
             int choice = scanner.nextInt();
             if (choice == 1) {
+                printSeparator(80);
                 printLoginPrompt();
-            } else if (choice == 2) {
+            }else if (choice == 2) {
+                printSeparator(80);
                 accountCreationPrompts();
                 System.out.println("Account created!");
                 printLoginPrompt();
@@ -37,11 +39,13 @@ public class LogInMenu {
                 System.err.println("Invalid choice!");
                 printInitialPrompt();
             }
+            scanner.close();
         }catch (InputMismatchException e){
             LOGGER.warning(e.getMessage());
             System.err.println("Invalid input");
             printInitialPrompt();
         }
+
     }
 
     private void printLoginPrompt() {
@@ -67,6 +71,7 @@ public class LogInMenu {
             if (client != null && client.getPassword().equals(password)) {
                 openClientView(client);
             } else if (client != null) {
+                printSeparator(80);
                 System.err.println("Wrong password, please try again.");
                 printLoginPrompt();
             } else {
@@ -82,21 +87,22 @@ public class LogInMenu {
         System.out.println("Create an account?");
         System.out.println("(1) -> Yes\n(2) -> No");
 
-        int choice;
-        do {
-            choice = scanner.nextInt();
-            if (choice == 1) {
-                accountCreationPrompts();
-                System.out.println("Account created!");
-                printInitialPrompt();
-                break;
-            } else {
-                System.err.println("Invalid choice!");
-            }
-        } while (choice != 2);
+        int choice = scanner.nextInt();
+        if (choice == 1) {
+            accountCreationPrompts();
+            System.out.println("Account created!");
+            printInitialPrompt();
+        } else if (choice == 2) {
+            System.out.println("Account creation declined!");
+            printInitialPrompt();
+        } else {
+            System.err.println("Invalid choice!");
+            accountCreationChoice();
+        }
     }
 
-    private void accountCreationPrompts() {
+
+    protected void accountCreationPrompts() {
         Scanner scanner = new Scanner(System.in);
         Console console = System.console();
 
@@ -124,13 +130,20 @@ public class LogInMenu {
             ClientRegistrant registrant = new ClientRegistrant(client);
             registrant.registerUser();
 
-        } catch (IllegalArgumentException | DateTimeException e) {
+        } catch (DateTimeException e) {
             LOGGER.warning(e.getMessage());
-            System.err.println(e.getMessage());
+            System.err.println("Invalid date format!");
             accountCreationPrompts();
         }
     }
+
+    public void printExceptionMessage(String message){
+        System.err.println(message);
+        accountCreationPrompts();
+    }
+
     private void openClientView(Client client){
+        printSeparator(80);
         System.out.println("Welcome, "+client.getUsername()+'!');
         ClientController clientController = new ClientController(client.getEmail());
         Dashboard clientDashboard = new ClientDashboard(clientController);
@@ -138,9 +151,17 @@ public class LogInMenu {
     }
 
     private void openAdminView(){
+        printSeparator(80);
         System.out.println("Welcome, overlord!");
         AdminController adminController = new AdminController(admin);
         Dashboard adminDashboard = new AdminDashboard(adminController);
         adminDashboard.getOptions();
+    }
+
+    private void printSeparator(int length){
+        for(int i=0;i<=length;i++){
+            System.out.print("=");
+        }
+        System.out.println();
     }
 }

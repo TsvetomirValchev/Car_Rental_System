@@ -1,16 +1,17 @@
 package db;
 
-import db.exceptions.ExceptionTransmitter;
+import cars.Car;
+import cars.RentalCar;
+import cars.Trip;
+import db.interfaces.ExceptionTransmitter;
 import logging.LoggerManager;
-import rental.Car;
-import rental.Trip;
 import users.Admin;
 import users.Client;
 import view.AdminDashboard;
 
+import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,20 +19,29 @@ public class AdminController implements ExceptionTransmitter {
 
     private static final Logger LOGGER = LoggerManager.getLogger(AdminController.class.getName());
     private static final EntryDAO<Client> clientDAO = new ClientDAO();
-    private static final EntryDAO<Car> carDAO = new CarDAO();
     private static final EntryDAO<Trip> tripDAO = new TripDAO();
+    private static final CarDAO carDAO = new CarDAO();
     private final AdminDashboard adminDashboard = new AdminDashboard(this);
     private final Admin adminModel;
 
     public AdminController(Admin admin) {
-        this.adminModel = Admin.getInstance();
+        this.adminModel = new Admin();
     }
 
-    public Map<Object, Client> readAllClients(){
+    public Map<Object, Client> getAllClients(){
         try {
             return clientDAO.read();
         } catch (SQLException e) {
             transmitException(e, Level.SEVERE, "Couldn't access data for clients!");
+        }
+        return Collections.emptyMap();
+    }
+
+    public Map<Object, RentalCar> getAllCars() {
+        try {
+            return carDAO.read();
+        } catch (SQLException e) {
+            transmitException(e, Level.SEVERE, "Couldn't access data for cars!");
         }
         return Collections.emptyMap();
     }
@@ -44,28 +54,75 @@ public class AdminController implements ExceptionTransmitter {
         }
     }
 
-    public void addCar(Car car){
+    public void addCar(String make, String model, double pricePerHour){
         try {
-            carDAO.create(car);
-        } catch (SQLException e) {
-            transmitException(e, Level.SEVERE, "Couldn't add car!");
+            List<Car> models = getModelsFromBrand(make);
+            if (models.stream().noneMatch(car -> car.getModel().equals(model))) {
+                throw new IllegalArgumentException();
+            }
+            carDAO.create(new RentalCar(null, make, model, pricePerHour, null, true));
+        } catch (SQLException | IllegalArgumentException e) {
+            if (e instanceof IllegalArgumentException) {
+                transmitException(e, Level.SEVERE, "No such brand-model combination!");
+            } else {
+                transmitException(e, Level.SEVERE, "Couldn't add car!");
+            }
         }
     }
 
-    public Map<Object, Car> getAllCars() {
+    public List<Car> getModelsFromBrand(String brand){
+        List<String> brands = getAllBrands();
         try {
-            return carDAO.read();
-        } catch (SQLException e) {
-            transmitException(e, Level.SEVERE, "Couldn't access data for cars!");
+            if (!brands.contains(brand)) {
+                throw new IllegalArgumentException();
+            }
+            return carDAO.readCarModels(brand)
+                    .stream()
+                    .sorted(Comparator.comparing(Car::getModel))
+                    .toList();
+        } catch (SQLException | IllegalArgumentException e) {
+            if(e instanceof SQLException){
+                transmitException(e, Level.SEVERE, "Couldn't load car models!");
+            }else{
+                transmitException(e, Level.WARNING, "Invalid brand entered: " + brand);
+            }
         }
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
-    public void deleteClient(Object id){
-        try {
-            clientDAO.delete(id);
+    public List<String> getAllBrands(){
+        try{
+            return carDAO.readCarBrands()
+                    .stream()
+                    .map(Car::getMake)
+                    .sorted()
+                    .toList();
         } catch (SQLException e) {
-            transmitException(e,Level.SEVERE, "Couldn't delete client account!");
+            transmitException(e, Level.SEVERE, "Couldn't load car brands!");
+        }
+        return Collections.emptyList();
+    }
+
+    public void deleteClient(Object key){
+        try {
+            List<Trip> trips = new ArrayList<>();
+            for (Trip trip : tripDAO.read().values()) {
+                if (trip.getClientId()==getClientByEmail((String) key).getId()) {
+                    trips.add(trip);
+                }
+            }
+            if (!trips.isEmpty()) {
+                for (Trip trip : trips) {
+                    tripDAO.delete(trip.getId());
+                }
+            }
+            clientDAO.delete(key);
+        } catch (SQLException e) {
+            if (e instanceof SQLDataException){
+                transmitException(e,Level.WARNING,e.getMessage());
+            }else{
+                transmitException(e,Level.SEVERE, "Couldn't delete client account!");
+            }
         }
     }
 
@@ -73,20 +130,30 @@ public class AdminController implements ExceptionTransmitter {
         try {
             carDAO.delete(carId);
         } catch (SQLException e) {
-            transmitException(e,Level.SEVERE,"Couldn't delete car!");
+            if (e instanceof SQLDataException){
+                transmitException(e,Level.WARNING,e.getMessage());
+            }else{
+                transmitException(e,Level.SEVERE,"Couldn't delete car!");
+            }
+
         }
     }
 
     public Client getClientByUsername(String username) {
-        Map<Object, Client> clients = readAllClients();
-        for (Client c : clients.values()) {
-            if (c.getUsername().equals(username)) {
-                return c;
-            }
-        }
-        return null;
+        Map<Object, Client> clients = getAllClients();
+        return clients.values().stream()
+                .filter(c -> c.getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
     }
 
+    public Client getClientByEmail(String email) {
+        Map<Object, Client> clients = getAllClients();
+        return clients.values().stream()
+                .filter(c -> c.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
+    }
     @Override
     public void transmitException(Exception e, Level severity,String message) {
         logException(e,severity);

@@ -1,18 +1,15 @@
-package rental;
+package cars;
 
-public class Car {
+public class RentalCar extends Car {
 
     private final Integer id;
-    private final String make;
-    private final String model;
-    private final double pricePerHour;
+    private final Double pricePerHour;
     private final Integer clientId;
     private final boolean isFree;
 
-    public Car(Integer id, String make, String model, double pricePerHour, Integer clientId, boolean isFree) {
+    public RentalCar(Integer id, String make, String model, Double pricePerHour, Integer clientId, boolean isFree) {
+        super(make,model);
         this.id = id;
-        this.make = make;
-        this.model = model;
         this.pricePerHour = pricePerHour;
         this.clientId = clientId;
         this.isFree = isFree;
@@ -20,12 +17,6 @@ public class Car {
 
     public Integer getId() {
         return id;
-    }
-    public String getMake() {
-        return make;
-    }
-    public String getModel() {
-        return model;
     }
     public double getPricePerHour() {
         return pricePerHour;

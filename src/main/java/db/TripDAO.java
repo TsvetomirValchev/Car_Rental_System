@@ -1,6 +1,6 @@
 package db;
 
-import rental.Trip;
+import cars.Trip;
 
 import java.sql.*;
 import java.time.LocalDateTime;

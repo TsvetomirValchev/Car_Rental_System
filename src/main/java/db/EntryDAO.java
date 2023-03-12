@@ -40,7 +40,7 @@ public abstract class EntryDAO<T> {
     abstract String buildUpdateQuery(int propertyIndex);
     abstract void setUpdatedValues(PreparedStatement statement, int propertyIndex, Object updatedValue) throws SQLException;
 
-    private Connection getConnection() throws SQLException {
+    Connection getConnection() throws SQLException {
         try{
             return DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
         }catch (SQLException e){
@@ -88,7 +88,11 @@ public abstract class EntryDAO<T> {
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setObject(1, key);
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLDataException("Entry with key " + key + " was not found!");
+            }
         }
     }
+
 }
