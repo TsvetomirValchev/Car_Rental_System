@@ -1,23 +1,21 @@
 package db;
 
 import cars.RentalCar;
-import db.interfaces.ExceptionTransmitter;
+import db.abstractions.Controller;
 import cars.Trip;
-import logging.LoggerManager;
 import users.Client;
 import view.ClientDashboard;
+import view.abstractions.Dashboard;
 
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
-public class ClientController implements ExceptionTransmitter {
+public class ClientController extends Controller {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(ClientController.class.getName());
     private static final EntryDAO<RentalCar> carDAO = new CarDAO();
     private static final EntryDAO<Trip> tripDAO = new TripDAO();
     private static final EntryDAO<Client> clientDAO = new ClientDAO();
@@ -29,6 +27,11 @@ public class ClientController implements ExceptionTransmitter {
         this.clientEmail = clientEmail;
     }
 
+
+    @Override
+    protected Dashboard getDashboard() {
+        return clientDashboard;
+    }
 
     public Client getClient() {
         try {
@@ -57,16 +60,12 @@ public class ClientController implements ExceptionTransmitter {
                                 LocalDateTime.now(),
                                 Optional.empty()));
                 updateCarRentalStatus(getCarByID(carId), false);
-                return  true;
+                return true;
             }else{
-                throw new IllegalStateException();
+                transmitException(new IllegalArgumentException(),Level.WARNING,"You are already renting a car!");
             }
-        }catch (IllegalStateException | SQLException e){
-            if(e instanceof IllegalStateException){
-                transmitException(e,Level.WARNING,"You are already renting a car!");
-            }else{
-                transmitException(e,Level.SEVERE,"Couldn't register trip!");
-            }
+        }catch (SQLException e){
+            transmitException(e,Level.SEVERE,"Couldn't register trip!");
         }
         return false;
     }
@@ -83,7 +82,7 @@ public class ClientController implements ExceptionTransmitter {
                     }
                 }
             } else {
-                throw new IllegalStateException("You are not renting a car!");
+                transmitException(new IllegalStateException(),Level.WARNING,"You are not renting a car!");
             }
         }catch (SQLException e){
             transmitException(e,Level.SEVERE,"Couldn't update trip!");
@@ -152,14 +151,10 @@ public class ClientController implements ExceptionTransmitter {
                         .findFirst()
                         .orElse(null);
             } else {
-                throw new IllegalStateException();
+                transmitException(new IllegalStateException(), Level.WARNING, "You are not renting a car!");
             }
-        } catch (SQLException | IllegalStateException e) {
-            if (e instanceof SQLException) {
-                transmitException(e, Level.SEVERE, "Couldn't load currently rented car data!");
-            } else {
-                transmitException(e, Level.WARNING, "You are not renting a car!");
-            }
+        } catch (SQLException e) {
+            transmitException(e, Level.SEVERE, "Couldn't load currently rented car data!");
         }
         return null;
     }
@@ -201,15 +196,5 @@ public class ClientController implements ExceptionTransmitter {
             transmitException(e,Level.SEVERE,"Couldn't find car!");
         }
         return null;
-    }
-
-    @Override
-    public void transmitException(Exception e, Level severity, String message) {
-        logException(e,severity);
-        clientDashboard.printExceptionMessage(message);
-    }
-    @Override
-    public void logException(Exception e,Level severity){
-        LOGGER.log(severity,e.getMessage());
     }
 }

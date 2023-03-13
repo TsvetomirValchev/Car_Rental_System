@@ -2,12 +2,13 @@ package view;
 
 import db.*;
 import logging.LoggerManager;
+import view.abstractions.Dashboard;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class AdminDashboard implements Dashboard{
+public class AdminDashboard implements Dashboard {
 
     private static final Logger LOGGER = LoggerManager.getLogger(AdminDashboard.class.getName());
     private final AdminController adminController;

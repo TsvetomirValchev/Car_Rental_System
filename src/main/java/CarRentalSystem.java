@@ -1,7 +1,7 @@
-import view.LogInMenu;
+import view.LogInDashboard;
 
 public class CarRentalSystem {
     public static void main(String[] args) {
-        new LogInMenu().printInitialPrompt();
+        new LogInDashboard().getOptions();
     }
 }

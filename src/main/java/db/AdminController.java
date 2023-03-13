@@ -3,21 +3,19 @@ package db;
 import cars.Car;
 import cars.RentalCar;
 import cars.Trip;
-import db.interfaces.ExceptionTransmitter;
-import logging.LoggerManager;
+import db.abstractions.Controller;
 import users.Admin;
 import users.Client;
 import view.AdminDashboard;
+import view.abstractions.Dashboard;
 
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class AdminController implements ExceptionTransmitter {
+public class AdminController extends Controller {
 
-    private static final Logger LOGGER = LoggerManager.getLogger(AdminController.class.getName());
     private static final EntryDAO<Client> clientDAO = new ClientDAO();
     private static final EntryDAO<Trip> tripDAO = new TripDAO();
     private static final CarDAO carDAO = new CarDAO();
@@ -26,6 +24,11 @@ public class AdminController implements ExceptionTransmitter {
 
     public AdminController(Admin admin) {
         this.adminModel = new Admin();
+    }
+
+    @Override
+    protected Dashboard getDashboard() {
+        return adminDashboard;
     }
 
     public Map<Object, Client> getAllClients(){
@@ -58,15 +61,11 @@ public class AdminController implements ExceptionTransmitter {
         try {
             List<Car> models = getModelsFromBrand(make);
             if (models.stream().noneMatch(car -> car.getModel().equals(model))) {
-                throw new IllegalArgumentException();
+                transmitException(new IllegalArgumentException(), Level.SEVERE, "No such brand-model combination!");
             }
             carDAO.create(new RentalCar(null, make, model, pricePerHour, null, true));
-        } catch (SQLException | IllegalArgumentException e) {
-            if (e instanceof IllegalArgumentException) {
-                transmitException(e, Level.SEVERE, "No such brand-model combination!");
-            } else {
-                transmitException(e, Level.SEVERE, "Couldn't add car!");
-            }
+        } catch (SQLException e) {
+            transmitException(e, Level.SEVERE, "Couldn't add car!");
         }
     }
 
@@ -74,18 +73,14 @@ public class AdminController implements ExceptionTransmitter {
         List<String> brands = getAllBrands();
         try {
             if (!brands.contains(brand)) {
-                throw new IllegalArgumentException();
+                transmitException(new IllegalArgumentException(), Level.WARNING, "Invalid brand entered: " + brand);
             }
             return carDAO.readCarModels(brand)
                     .stream()
                     .sorted(Comparator.comparing(Car::getModel))
                     .toList();
         } catch (SQLException | IllegalArgumentException e) {
-            if(e instanceof SQLException){
-                transmitException(e, Level.SEVERE, "Couldn't load car models!");
-            }else{
-                transmitException(e, Level.WARNING, "Invalid brand entered: " + brand);
-            }
+            transmitException(e, Level.SEVERE, "Couldn't load car models!");
         }
         return Collections.emptyList();
     }
@@ -153,14 +148,5 @@ public class AdminController implements ExceptionTransmitter {
                 .filter(c -> c.getEmail().equals(email))
                 .findFirst()
                 .orElse(null);
-    }
-    @Override
-    public void transmitException(Exception e, Level severity,String message) {
-        logException(e,severity);
-        adminDashboard.printExceptionMessage(message);
-    }
-    @Override
-    public void logException(Exception e,Level severity){
-        LOGGER.log(severity,e.getMessage());
     }
 }

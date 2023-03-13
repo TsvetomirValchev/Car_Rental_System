@@ -4,6 +4,7 @@ import cars.RentalCar;
 import cars.Trip;
 import db.ClientController;
 import logging.LoggerManager;
+import view.abstractions.Dashboard;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,7 +44,7 @@ public class ClientDashboard implements Dashboard {
                 case 2 -> printHistory();
                 case 3 -> rentalPrompt();
                 case 4 -> returnPrompt();
-                case 0 -> System.out.println("Exiting..");
+                case 0 ->  System.out.println("Exiting..");
                 default -> System.err.println("Enter a valid option!");
             }
             if (choice != 0) {
@@ -77,6 +78,9 @@ public class ClientDashboard implements Dashboard {
                         rentTime,
                         returnTime));
             }
+        }
+        if(sb.length() == 0) {
+            return "No trips found for this account.";
         }
         return sb.toString();
     }

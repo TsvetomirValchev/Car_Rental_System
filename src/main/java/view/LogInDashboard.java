@@ -6,6 +6,7 @@ import logging.LoggerManager;
 import users.Admin;
 import users.Client;
 import users.util.ClientRegistrant;
+import view.abstractions.Dashboard;
 
 import java.io.Console;
 import java.time.DateTimeException;
@@ -14,38 +15,48 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-public class LogInMenu {
-    private static final Logger LOGGER = LoggerManager.getLogger(LogInMenu.class.getName());
+public class LogInDashboard implements Dashboard {
+    private static final Logger LOGGER = LoggerManager.getLogger(LogInDashboard.class.getName());
     private static final Admin admin = new Admin();
 
-    public void printInitialPrompt() {
-        try{
-            Scanner scanner = new Scanner(System.in);
+    @Override
+    public void printMenu() {
+        System.out.println("Welcome!");
+        System.out.println("(1) -> Login");
+        System.out.println("(2) -> Register");
+    }
 
-            System.out.println("Welcome!");
-            System.out.println("(1) -> Login");
-            System.out.println("(2) -> Register");
-
-            int choice = scanner.nextInt();
-            if (choice == 1) {
-                printSeparator(80);
-                printLoginPrompt();
-            }else if (choice == 2) {
-                printSeparator(80);
-                accountCreationPrompts();
-                System.out.println("Account created!");
-                printLoginPrompt();
-            } else {
-                System.err.println("Invalid choice!");
-                printInitialPrompt();
-            }
-            scanner.close();
-        }catch (InputMismatchException e){
+    @Override
+    public void getOptions() {
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+        try {
+         do{
+             printMenu();
+             choice = scanner.nextInt();
+             switch (choice) {
+                 case 1 -> {
+                     printSeparator(80);
+                     printLoginPrompt();
+                 }
+                 case 2 -> {
+                     printSeparator(80);
+                     accountCreationPrompts();
+                     System.out.println("Account created!");
+                     printLoginPrompt();
+                 }
+                 case 0 -> System.out.println("Exiting..");
+                 default -> {
+                     System.err.println("Invalid choice!");
+                     printMenu();
+                 }
+             }
+         }while (choice!=0);
+        } catch (InputMismatchException e) {
             LOGGER.warning(e.getMessage());
             System.err.println("Invalid input");
-            printInitialPrompt();
+            printMenu();
         }
-
     }
 
     private void printLoginPrompt() {
@@ -88,19 +99,25 @@ public class LogInMenu {
         System.out.println("(1) -> Yes\n(2) -> No");
 
         int choice = scanner.nextInt();
-        if (choice == 1) {
-            accountCreationPrompts();
-            System.out.println("Account created!");
-            printInitialPrompt();
-        } else if (choice == 2) {
-            System.out.println("Account creation declined!");
-            printInitialPrompt();
-        } else {
-            System.err.println("Invalid choice!");
-            accountCreationChoice();
+        switch (choice) {
+            case 1 -> {
+                accountCreationPrompts();
+                printSeparator(80);
+                System.out.println("Account created!");
+                printMenu();
+                getOptions();
+            }
+            case 2 -> {
+                System.out.println("Account creation declined!");
+                printMenu();
+                getOptions();
+            }
+            default -> {
+                System.err.println("Invalid choice!");
+                accountCreationChoice();
+            }
         }
     }
-
 
     protected void accountCreationPrompts() {
         Scanner scanner = new Scanner(System.in);
@@ -156,12 +173,5 @@ public class LogInMenu {
         AdminController adminController = new AdminController(admin);
         Dashboard adminDashboard = new AdminDashboard(adminController);
         adminDashboard.getOptions();
-    }
-
-    private void printSeparator(int length){
-        for(int i=0;i<=length;i++){
-            System.out.print("=");
-        }
-        System.out.println();
     }
 }
