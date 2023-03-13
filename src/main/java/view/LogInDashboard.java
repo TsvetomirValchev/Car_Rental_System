@@ -154,11 +154,6 @@ public class LogInDashboard implements Dashboard {
         }
     }
 
-    public void printExceptionMessage(String message){
-        System.err.println(message);
-        accountCreationPrompts();
-    }
-
     private void openClientView(Client client){
         printSeparator(80);
         System.out.println("Welcome, "+client.getUsername()+'!');
@@ -173,5 +168,11 @@ public class LogInDashboard implements Dashboard {
         AdminController adminController = new AdminController(admin);
         Dashboard adminDashboard = new AdminDashboard(adminController);
         adminDashboard.getOptions();
+    }
+    
+    @Override
+    public void printExceptionMessage(String message){
+        System.err.println(message);
+        accountCreationPrompts();
     }
 }

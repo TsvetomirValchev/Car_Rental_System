@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 public abstract class Controller {
     private static final Logger LOGGER = LoggerManager.getLogger(Controller.class.getName());
+
     protected abstract Dashboard getDashboard();
 
     public void transmitException(Exception e, Level severity,String message) {
