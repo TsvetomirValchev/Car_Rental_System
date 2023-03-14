@@ -42,7 +42,7 @@ public class UserValidator{
     }
 
     public boolean isNameValid(){
-        if(client.getUsername().equals(new Admin().getUsername())){
+        if(client.getUsername().equals(new Admin().getUsername()) || client.getUsername().contains("admin")){
             return false;
         }
         Pattern pattern = Pattern.compile(NAME_PATTERN);
@@ -75,7 +75,6 @@ public class UserValidator{
     boolean doesUserExist() {
         return doesUsernameExist() && doesPasswordMatch();
     }
-
     private boolean doesUsernameExist() {
         for(Client c: adminController.getAllClients().values()) {
             if(c.getUsername().equals(client.getUsername())) {
@@ -84,7 +83,6 @@ public class UserValidator{
         }
         return false;
     }
-
     private boolean doesPasswordMatch() {
         for(Client c: adminController.getAllClients().values()) {
             if(c.getUsername().equals(client.getUsername()) && c.getPassword().equals(client.getPassword())) {

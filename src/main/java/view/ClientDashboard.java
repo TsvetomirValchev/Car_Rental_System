@@ -44,7 +44,7 @@ public class ClientDashboard implements Dashboard {
                 case 2 -> printHistory();
                 case 3 -> rentalPrompt();
                 case 4 -> returnPrompt();
-                case 0 ->  System.out.println("Exiting..");
+                case 0 -> System.out.println("Exiting..");
                 default -> System.err.println("Enter a valid option!");
             }
             if (choice != 0) {

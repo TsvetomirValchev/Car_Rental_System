@@ -1,9 +1,12 @@
 package view;
 
+import cars.Car;
 import db.*;
 import logging.LoggerManager;
+import users.Client;
 import view.abstractions.Dashboard;
 
+import java.util.Comparator;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -53,12 +56,20 @@ public class AdminDashboard implements Dashboard {
 
     private void readAllCars(){
         System.out.println("All currently available cars:\n");
-        adminController.getAllCars().forEach((k,v)->System.out.println(v));
+        adminController.getAllCars()
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(Car::getMake))
+                .forEach(System.out::println);
     }
 
     private void readAllUsers(){
-        System.out.println("All currently registered clients: ");
-        adminController.getAllClients().forEach((k, v)->System.out.println(v));
+        System.out.println("All currently registered clients:\n");
+        adminController.getAllClients()
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(Client::getUsername))
+                .forEach(System.out::println);
     }
 
     private void addACarPrompt(){

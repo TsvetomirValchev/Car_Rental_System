@@ -104,12 +104,10 @@ public class LogInDashboard implements Dashboard {
                 accountCreationPrompts();
                 printSeparator(80);
                 System.out.println("Account created!");
-                printMenu();
                 getOptions();
             }
             case 2 -> {
                 System.out.println("Account creation declined!");
-                printMenu();
                 getOptions();
             }
             default -> {

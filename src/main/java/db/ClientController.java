@@ -48,11 +48,11 @@ public class ClientController extends Controller {
 
     public boolean rentCar(int carId) {
         try{
-            if (getCarByID(carId)== null) {
-                System.err.println("Car with ID " + carId + " not found!");
-                return false;
-            }
             if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
+                if (getCarByID(carId)== null) {
+                    transmitException(new IllegalArgumentException(),Level.WARNING,"Car with ID"+carId+" not found!");
+                    return false;
+                }
                 tripDAO.create(
                         new Trip(null,
                                 getClient().getId(),
@@ -102,14 +102,14 @@ public class ClientController extends Controller {
     }
 
     public double calculateTripPrice(Trip trip) {
-       try{
-           Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().orElse(LocalDateTime.now()));
-           long hours = (long) Math.ceil((double) (duration.toMinutes() + 60) / 60.0);
-           return getRentedCar().getPricePerHour() * hours;
-       }catch (IllegalStateException e){
-           transmitException(e,Level.WARNING,"You are not renting a car!");
-       }
-       return 0;
+        try{
+            Duration duration = Duration.between(trip.getRentTime(), trip.getReturnTime().orElse(LocalDateTime.now()));
+            long hours = (long) Math.ceil((double) (duration.toMinutes() + 60) / 60.0);
+            return getRentedCar().getPricePerHour() * hours;
+        }catch (IllegalStateException e){
+            transmitException(e,Level.WARNING,"You are not renting a car!");
+        }
+        return 0;
     }
 
     public List<Trip> getHistory(){

@@ -100,18 +100,23 @@ public class AdminController extends Controller {
 
     public void deleteClient(Object key){
         try {
-            List<Trip> trips = new ArrayList<>();
-            for (Trip trip : tripDAO.read().values()) {
-                if (trip.getClientId()==getClientByEmail((String) key).getId()) {
-                    trips.add(trip);
+            Client client = getClientByEmail((String) key);
+            if (client != null) {
+                List<Trip> trips = new ArrayList<>();
+                for (Trip trip : tripDAO.read().values()) {
+                    if (trip.getClientId() == client.getId()) {
+                        trips.add(trip);
+                    }
                 }
-            }
-            if (!trips.isEmpty()) {
-                for (Trip trip : trips) {
-                    tripDAO.delete(trip.getId());
+                if (!trips.isEmpty()) {
+                    for (Trip trip : trips) {
+                        tripDAO.delete(trip.getId());
+                    }
                 }
+                clientDAO.delete(key);
+            }else{
+                transmitException(new IllegalArgumentException(),Level.WARNING,"User with e-mail: "+key+" was not found!");
             }
-            clientDAO.delete(key);
         } catch (SQLException e) {
             if (e instanceof SQLDataException){
                 transmitException(e,Level.WARNING,e.getMessage());
