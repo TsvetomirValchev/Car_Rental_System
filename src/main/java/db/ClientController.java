@@ -48,11 +48,11 @@ public class ClientController extends Controller {
 
     public boolean rentCar(int carId) {
         try{
+            if (getCarByID(carId)== null) {
+                transmitException(new IllegalArgumentException(),Level.WARNING,"Car with ID"+carId+" not found!");
+                return false;
+            }
             if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
-                if (getCarByID(carId)== null) {
-                    transmitException(new IllegalArgumentException(),Level.WARNING,"Car with ID"+carId+" not found!");
-                    return false;
-                }
                 tripDAO.create(
                         new Trip(null,
                                 getClient().getId(),
