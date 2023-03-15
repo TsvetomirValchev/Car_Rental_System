@@ -55,7 +55,7 @@ public class LogInDashboard implements Dashboard {
         } catch (InputMismatchException e) {
             LOGGER.warning(e.getMessage());
             System.err.println("Invalid input");
-            printMenu();
+            getOptions();
         }
     }
 

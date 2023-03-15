@@ -24,6 +24,9 @@ public class RentalCar extends Car {
     public Integer getClientId() {
         return clientId;
     }
+    public boolean isFree() {
+        return isFree;
+    }
 
     @Override
     public String toString() {

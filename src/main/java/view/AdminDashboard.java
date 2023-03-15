@@ -54,6 +54,38 @@ public class AdminDashboard implements Dashboard {
         }while (choice!=0);
     }
 
+    private void deleteACarPrompt(){
+        try{
+            readAllCars();
+            printSeparator(80);
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter the ID of the car: ");
+            int id = scanner.nextInt();
+            adminController.deleteCar(id);
+        }catch (InputMismatchException e){
+            LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
+            deleteACarPrompt();
+        }
+        System.out.println("Car deleted!");
+    }
+
+    private void deleteAUserPrompt() {
+        try {
+            readAllUsers();
+            printSeparator(80);
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter the e-mail of the user: ");
+            String email = scanner.nextLine();
+            adminController.deleteClient(email);
+        } catch (InputMismatchException e) {
+            LOGGER.warning(e.getMessage());
+            System.err.println(e.getMessage());
+            deleteAUserPrompt();
+        }
+        System.out.println("User and their history deleted!");
+    }
+
     private void readAllCars(){
         System.out.println("All currently available cars:\n");
         adminController.getAllCars()
@@ -99,39 +131,16 @@ public class AdminDashboard implements Dashboard {
 
             adminController.addCar(brand,model,pricePerHr);
             System.out.println("Car successfully added!");
+            getOptions();
         }catch (InputMismatchException | NumberFormatException e){
             LOGGER.warning(e.getMessage());
-            System.err.println(e.getMessage());
+            if(e instanceof  NumberFormatException){
+                System.err.println("Invalid price!");
+            }else{
+                System.err.println("Invalid input!");
+            }
             addACarPrompt();
         }
-    }
-
-    private void deleteACarPrompt(){
-        try{
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter the ID of the car: ");
-            int id = scanner.nextInt();
-            adminController.deleteCar(id);
-        }catch (InputMismatchException e){
-            LOGGER.warning(e.getMessage());
-            System.err.println(e.getMessage());
-            deleteACarPrompt();
-        }
-        System.out.println("Car deleted!");
-    }
-
-    private void deleteAUserPrompt() {
-        try {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter the e-mail of the user: ");
-            String email = scanner.nextLine();
-            adminController.deleteClient(email);
-        } catch (InputMismatchException e) {
-            LOGGER.warning(e.getMessage());
-            System.err.println(e.getMessage());
-            deleteAUserPrompt();
-        }
-        System.out.println("User and their history deleted!");
     }
 
     @Override

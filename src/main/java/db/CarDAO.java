@@ -104,7 +104,4 @@ public class CarDAO extends EntryDAO<RentalCar>{
         }
         return models;
     }
-
-
-
 }

@@ -49,18 +49,22 @@ public class ClientController extends Controller {
     public boolean rentCar(int carId) {
         try{
             if (getCarByID(carId)== null) {
-                transmitException(new IllegalArgumentException(),Level.WARNING,"Car with ID"+carId+" not found!");
+                transmitException(new IllegalArgumentException(),Level.WARNING,"Car with ID '"+carId+"' not found!");
                 return false;
             }
-            if (!isUserCurrentlyRenting() && getCarByID(carId).getClientId()==0) {
-                tripDAO.create(
-                        new Trip(null,
-                                getClient().getId(),
-                                getCarByID(carId).getId(),
-                                LocalDateTime.now(),
-                                Optional.empty()));
-                updateCarRentalStatus(getCarByID(carId), false);
-                return true;
+            if (!isUserCurrentlyRenting()) {
+                if(getCarByID(carId).isFree()){
+                    tripDAO.create(
+                            new Trip(null,
+                                    getClient().getId(),
+                                    getCarByID(carId).getId(),
+                                    LocalDateTime.now(),
+                                    Optional.empty()));
+                    updateCarRentalStatus(getCarByID(carId), false);
+                    return true;
+                }else{
+                    transmitException(new IllegalStateException(),Level.WARNING,"Car is already rented!");
+                }
             }else{
                 transmitException(new IllegalArgumentException(),Level.WARNING,"You are already renting a car!");
             }

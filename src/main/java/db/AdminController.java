@@ -61,7 +61,7 @@ public class AdminController extends Controller {
         try {
             List<Car> models = getModelsFromBrand(make);
             if (models.stream().noneMatch(car -> car.getModel().equals(model))) {
-                transmitException(new IllegalArgumentException(), Level.SEVERE, "No such brand-model combination!");
+                transmitException(new IllegalArgumentException(), Level.WARNING, "No such brand-model combination!");
             }
             carDAO.create(new RentalCar(null, make, model, pricePerHour, null, true));
         } catch (SQLException e) {
@@ -102,25 +102,15 @@ public class AdminController extends Controller {
         try {
             Client client = getClientByEmail((String) key);
             if (client != null) {
-                List<Trip> trips = new ArrayList<>();
-                for (Trip trip : tripDAO.read().values()) {
-                    if (trip.getClientId() == client.getId()) {
-                        trips.add(trip);
-                    }
-                }
-                if (!trips.isEmpty()) {
-                    for (Trip trip : trips) {
-                        tripDAO.delete(trip.getId());
-                    }
-                }
+                deleteTripsByField("clientId", client.getId());
                 clientDAO.delete(key);
-            }else{
-                transmitException(new IllegalArgumentException(),Level.WARNING,"User with e-mail: "+key+" was not found!");
+            } else {
+                transmitException(new IllegalArgumentException(),Level.WARNING,"User with e-mail: '"+key+"' was not found!");
             }
         } catch (SQLException e) {
             if (e instanceof SQLDataException){
                 transmitException(e,Level.WARNING,e.getMessage());
-            }else{
+            } else {
                 transmitException(e,Level.SEVERE, "Couldn't delete client account!");
             }
         }
@@ -128,14 +118,37 @@ public class AdminController extends Controller {
 
     public void deleteCar(int carId){
         try {
+            RentalCar car = getAllCars().values().stream().filter((v)->v.getId()==carId).findFirst().orElse(null);
+            if(!car.isFree()){
+                transmitException(new IllegalStateException(),Level.WARNING,"Car is being rented!");
+            }
+            deleteTripsByField("carId", carId);
             carDAO.delete(carId);
         } catch (SQLException e) {
             if (e instanceof SQLDataException){
                 transmitException(e,Level.WARNING,e.getMessage());
-            }else{
+            } else {
                 transmitException(e,Level.SEVERE,"Couldn't delete car!");
             }
+        }
+    }
 
+    private void deleteTripsByField(String fieldName, int fieldValue) throws SQLException {
+        List<Trip> trips = new ArrayList<>();
+        for (Trip trip : tripDAO.read().values()) {
+            if (fieldName.equals("clientId") && trip.getClientId() == fieldValue) {
+                if (trip.getReturnTime().isEmpty()) {
+                    transmitException(new IllegalStateException(),Level.WARNING,"User is currently renting!");
+                }
+                trips.add(trip);
+            } else if (fieldName.equals("carId") && trip.getCarId() == fieldValue) {
+                trips.add(trip);
+            }
+        }
+        if (!trips.isEmpty()) {
+            for (Trip trip : trips) {
+                tripDAO.delete(trip.getId());
+            }
         }
     }
 
@@ -147,7 +160,7 @@ public class AdminController extends Controller {
                 .orElse(null);
     }
 
-    public Client getClientByEmail(String email) {
+    private Client getClientByEmail(String email) {
         Map<Object, Client> clients = getAllClients();
         return clients.values().stream()
                 .filter(c -> c.getEmail().equals(email))

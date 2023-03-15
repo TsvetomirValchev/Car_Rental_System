@@ -53,6 +53,26 @@ public class ClientDashboard implements Dashboard {
         }while (choice!=0);
     }
 
+    private void rentalPrompt(){
+        try{
+            Scanner scan = new Scanner(System.in);
+
+            printFreeCars();
+            printSeparator(80);
+
+            System.out.println("Enter the ID of the car you wish to rent:  ");
+            int id = scan.nextInt();
+
+            if (clientController.rentCar(id)) {
+                System.out.println("Car successfully rented!");
+            }
+        }catch (InputMismatchException e){
+            LOGGER.warning(e.getMessage());
+            System.err.println("Invalid input format!");
+            rentalPrompt();
+        }
+    }
+
     private void printFreeCars(){
         System.out.println("All cars available for rent: ");
         clientController.getFreeCars()
@@ -86,23 +106,6 @@ public class ClientDashboard implements Dashboard {
     }
     private String formatTime(LocalDateTime time) {
         return time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    }
-
-    private void rentalPrompt(){
-       try{
-           Scanner scan = new Scanner(System.in);
-
-           System.out.println("Enter the ID of the car you wish to rent:  ");
-           int id = scan.nextInt();
-
-           if (clientController.rentCar(id)) {
-               System.out.println("Car successfully rented!");
-           }
-       }catch (InputMismatchException e){
-           LOGGER.warning(e.getMessage());
-           System.err.println("Invalid input format!");
-           rentalPrompt();
-       }
     }
 
     private void returnPrompt(){
