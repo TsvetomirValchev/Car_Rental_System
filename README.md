@@ -4,7 +4,7 @@ Architectrure is based on the MVC pattern with the model being represented by PO
 
 Database architecture:
 
-![db](https://user-images.githubusercontent.com/91593275/225697794-7da60b1e-7e17-47f2-be44-92a23e9a6b89.png)
+![db2](https://user-images.githubusercontent.com/91593275/225699036-044a98e8-f1ec-47f0-85f9-61e9411fc743.jpg)
 
 There are 2 types of accounts:
 
