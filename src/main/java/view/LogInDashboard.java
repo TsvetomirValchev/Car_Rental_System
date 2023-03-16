@@ -46,10 +46,8 @@ public class LogInDashboard implements Dashboard {
                      printLoginPrompt();
                  }
                  case 0 -> System.out.println("Exiting..");
-                 default -> {
-                     System.err.println("Invalid choice!");
-                     printMenu();
-                 }
+                 default -> System.err.println("Invalid choice!");
+
              }
          }while (choice!=0);
         } catch (InputMismatchException e) {

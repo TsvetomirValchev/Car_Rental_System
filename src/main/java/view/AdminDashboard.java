@@ -64,7 +64,7 @@ public class AdminDashboard implements Dashboard {
             adminController.deleteCar(id);
         }catch (InputMismatchException e){
             LOGGER.warning(e.getMessage());
-            System.err.println(e.getMessage());
+            System.err.println("Invalid ID input!");
             deleteACarPrompt();
         }
         System.out.println("Car deleted!");

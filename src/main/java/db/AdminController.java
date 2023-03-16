@@ -119,6 +119,9 @@ public class AdminController extends Controller {
     public void deleteCar(int carId){
         try {
             RentalCar car = getAllCars().values().stream().filter((v)->v.getId()==carId).findFirst().orElse(null);
+            if(car==null){
+                transmitException(new IllegalArgumentException(),Level.WARNING,"No car found with ID: '"+carId+"'");
+            }
             if(!car.isFree()){
                 transmitException(new IllegalStateException(),Level.WARNING,"Car is being rented!");
             }
